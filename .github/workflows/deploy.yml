@@ -34,7 +34,9 @@ jobs:
         run: |
           echo "SSH_HOST: ${{ secrets.SSH_HOST }}"
           echo "SSH_USER: ${{ secrets.SSH_USER }}"
-          echo "SSH_KEY (first 10 chars): ${{ secrets.SSH_KEY | slice(0, 10) }}"
+          echo "SSH_KEY (first 10 chars): ${SSH_KEY_DEBUG}"
+        env:
+          SSH_KEY_DEBUG: ${{ secrets.SSH_KEY }}
 
       - name: Deploy to server
         uses: appleboy/ssh-action@master
