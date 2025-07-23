@@ -33,10 +33,15 @@
             username: ${{ secrets.SSH_USER }}
             key: ${{ secrets.SSH_KEY }}
             script: |
-              # Créer le réseau s'il n'existe pas
-              docker network create app-network || true
-
-              # Démarrer PostgreSQL s'il n'est pas déjà lancé
+              # Nettoyer les anciens containers
+              docker stop adminer save_your_car_db go-backend || true
+              docker rm adminer save_your_car_db go-backend || true
+                    
+              # Créer le réseau
+              docker network rm app-network || true
+              docker network create app-network
+                    
+              # PostgreSQL
               docker run -d \
                 --name save_your_car_db \
                 --network app-network \
@@ -44,30 +49,24 @@
                 -e POSTGRES_USER=${DB_USER} \
                 -e POSTGRES_PASSWORD=${DB_PASSWORD} \
                 -e POSTGRES_DB=${DB_NAME} \
-                -e POSTGRES_HOST_AUTH_METHOD=trust \
-                -e POSTGRES_INITDB_ARGS="--auth-host=md5" \
+                -e POSTGRES_HOST_AUTH_METHOD=md5 \
                 -v postgres_data:/var/lib/postgresql/data \
                 -p 5432:5432 \
-                postgres:15-alpine || true
-
-                sleep 5
-                  docker exec save_your_car_db sh -c "echo 'host all all 0.0.0.0/0 md5' >> /var/lib/postgresql/data/pg_hba.conf" || true
-                  docker restart save_your_car_db || true
-              
-                docker run -d \
-                  --name adminer \
-                  --network app-network \
-                  --restart always \
-                  -p 8080:8080 \
-                  adminer || true
-
-              # Attendre que PostgreSQL soit prêt
-              sleep 10
-
-              # Déployer le backend
+                postgres:15-alpine
+                    
+              # Attendre PostgreSQL
+              sleep 15
+                    
+              # Adminer
+              docker run -d \
+                --name adminer \
+                --network app-network \
+                --restart always \
+                -p 8080:8080 \
+                adminer
+                    
+              # Backend
               docker pull ghcr.io/${{ github.repository }}:latest
-              docker stop go-backend || true
-              docker rm go-backend || true
               docker run -d \
                 --name go-backend \
                 --network app-network \
