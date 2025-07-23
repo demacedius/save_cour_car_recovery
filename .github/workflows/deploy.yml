@@ -44,9 +44,15 @@
                 -e POSTGRES_USER=${DB_USER} \
                 -e POSTGRES_PASSWORD=${DB_PASSWORD} \
                 -e POSTGRES_DB=${DB_NAME} \
+                -e POSTGRES_HOST_AUTH_METHOD=md5 \
                 -v postgres_data:/var/lib/postgresql/data \
                 -p 5432:5432 \
-                postgres:15-alpine || true
+                postgres:15-alpine \
+                postgres -c 'listen_addresses=*' -c 'max_connections=100' || true
+
+                sleep 5
+                  docker exec save_your_car_db sh -c "echo 'host all all 0.0.0.0/0 md5' >> /var/lib/postgresql/data/pg_hba.conf" || true
+                  docker restart save_your_car_db || true
               
                 docker run -d \
                   --name adminer \
