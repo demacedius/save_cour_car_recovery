@@ -99,5 +99,6 @@ func main() {
 
 	log.Printf("Serveur démarré sur le port %s", port)
 	r.Run(":" + port)
-	//triger CI 7
+	//triger CI 8
+
 }

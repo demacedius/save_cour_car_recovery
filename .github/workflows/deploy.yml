@@ -47,6 +47,13 @@
                 -v postgres_data:/var/lib/postgresql/data \
                 -p 5432:5432 \
                 postgres:15-alpine || true
+              
+                docker run -d \
+                  --name adminer \
+                  --network app-network \
+                  --restart always \
+                  -p 8080:8080 \
+                  adminer || true
 
               # Attendre que PostgreSQL soit prêt
               sleep 10
