@@ -1,44 +1,64 @@
-name: Deploy Go Backend
+  name: Deploy Go Backend
 
-on:
-  push:
-    branches:
-      - master
-    paths:
-      - 'backend-go/**'
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: ./backend-go
-          push: true
-          tags: ghcr.io/${{ github.repository }}:latest
-      - name: Deploy to server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            docker pull ghcr.io/${{ github.repository }}:latest
-            docker stop go-backend || true
-            docker rm go-backend || true
-            docker run -d \
-              --name go-backend \
-              -p 3334:3334 \
-              --restart always \
-              --env-file ~/save_cour_car_recovery/.env \
-              ghcr.io/${{ github.repository }}:latest
+  on:
+    push:
+      branches:
+        - master
+      paths:
+        - 'backend-go/**'
+  jobs:
+    build-and-deploy:
+      runs-on: ubuntu-latest
+      permissions:
+        packages: write
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
+        - name: Log in to GitHub Container Registry
+          uses: docker/login-action@v2
+          with:
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+        - name: Build and push Docker image
+          uses: docker/build-push-action@v4
+          with:
+            context: ./backend-go
+            push: true
+            tags: ghcr.io/${{ github.repository }}:latest
+        - name: Deploy to server
+          uses: appleboy/ssh-action@master
+          with:
+            host: ${{ secrets.SSH_HOST }}
+            username: ${{ secrets.SSH_USER }}
+            key: ${{ secrets.SSH_KEY }}
+            script: |
+              # Créer le réseau s'il n'existe pas
+              docker network create app-network || true
+
+              # Démarrer PostgreSQL s'il n'est pas déjà lancé
+              docker run -d \
+                --name save_your_car_db \
+                --network app-network \
+                --restart always \
+                -e POSTGRES_USER=${DB_USER} \
+                -e POSTGRES_PASSWORD=${DB_PASSWORD} \
+                -e POSTGRES_DB=${DB_NAME} \
+                -v postgres_data:/var/lib/postgresql/data \
+                -p 5432:5432 \
+                postgres:15-alpine || true
+
+              # Attendre que PostgreSQL soit prêt
+              sleep 10
+
+              # Déployer le backend
+              docker pull ghcr.io/${{ github.repository }}:latest
+              docker stop go-backend || true
+              docker rm go-backend || true
+              docker run -d \
+                --name go-backend \
+                --network app-network \
+                -p 3334:3334 \
+                --restart always \
+                --env-file ~/save_cour_car_recovery/.env \
+                ghcr.io/${{ github.repository }}:latest
