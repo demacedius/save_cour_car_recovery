@@ -3,7 +3,7 @@ name: Deploy Go Backend
 on: 
   push:
     branches:
-      - main # ou master, selon votre branche par défaut
+      - master # ou master, selon votre branche par défaut
     paths:
       - 'backend-go/**' # Ne se déclenche que si le code du backend change
 
