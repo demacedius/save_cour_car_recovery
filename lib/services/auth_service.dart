@@ -199,19 +199,18 @@ class AuthService {
       final token = await getToken();
       if (token == null) return false;
 
+      // Utiliser l'endpoint /vehicles pour valider le token car /user/profile n'existe pas
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/user/profile'),
+        Uri.parse('${ApiConfig.baseUrl}/vehicles'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
 
-      print('🧪 Test token - Status: ${response.statusCode}');
+      print('🧪 Test token via /vehicles - Status: ${response.statusCode}');
       if (response.statusCode == 200) {
-        // Sauvegarder les données utilisateur si la validation réussit
-        final userData = jsonDecode(response.body);
-        await setUserData(userData);
+        print('✅ Token valide');
         return true;
       } else if (response.statusCode == 401) {
         // Token invalide/expiré - nettoyer les données
@@ -220,6 +219,8 @@ class AuthService {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('needs_login', true);
         print('🔄 Token expiré - Données nettoyées, reconnexion requise');
+      } else {
+        print('🤔 Réponse inattendue: ${response.statusCode} - ${response.body}');
       }
       return false;
     } catch (e) {

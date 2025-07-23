@@ -71,7 +71,22 @@ class _TechnicalControlScreenState extends State<TechnicalControlScreen> {
     });
 
     try {
-      final success = await createVehicle(vehicle, token);
+      // Valider le token avant d'essayer de créer le véhicule
+      print('🔍 Validation du token avant création véhicule...');
+      final isTokenValid = await AuthService.validateToken();
+      
+      if (!isTokenValid) {
+        print('❌ Token invalide - Redirection vers connexion');
+        throw Exception('Token expiré. Veuillez vous reconnecter.');
+      }
+      
+      // Récupérer le token à nouveau au cas où il aurait été rafraîchi
+      final validToken = await AuthService.getToken();
+      if (validToken == null) {
+        throw Exception('Aucun token valide trouvé. Veuillez vous reconnecter.');
+      }
+      
+      final success = await createVehicle(vehicle, validToken);
       
       if (success && mounted) {
         // Programmer les notifications de contrôle technique si la date est définie

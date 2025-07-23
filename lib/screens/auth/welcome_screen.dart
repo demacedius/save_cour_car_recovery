@@ -80,7 +80,7 @@ class WelcomeScreen extends StatelessWidget {
                 height: 50,
                 child: TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/matricule');
+                    Navigator.pushNamed(context, '/sign_up');
                   },
                   style: TextButton.styleFrom(
                     backgroundColor: Colors.black,
