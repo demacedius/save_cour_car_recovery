@@ -23,11 +23,11 @@ class HomeScreen extends StatelessWidget {
               children: [
                 const HomeHeader(),
 
-                // SearchBar positionnée à moitié dans le header - responsive positioning
+               
                 Positioned(
                   left: MediaQuery.of(context).size.width < 400 ? 16 : 24,
                   right: MediaQuery.of(context).size.width < 400 ? 16 : 24,
-                  bottom: MediaQuery.of(context).size.height < 700 ? -24 : -28, // moitié de la hauteur + spacing
+                  bottom: MediaQuery.of(context).size.height < 700 ? -24 : -28, 
                   child: const searchBar.SearchBar(),
                 ),
               ],

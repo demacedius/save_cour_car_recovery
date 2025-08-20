@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:save_your_car/api_service/user_vehicles.dart';
 import 'package:save_your_car/models/vehicles.dart';
 import 'package:save_your_car/services/auth_service.dart';
+import 'package:save_your_car/theme/figma_color.dart';
 import 'vehicle_card.dart';
 
 class VehicleListHorizontal extends StatefulWidget {
@@ -55,12 +56,29 @@ class _VehicleListHorizontalState extends State<VehicleListHorizontal> {
     }
 
     if (vehicles.isEmpty) {
-      return const SizedBox(
+      return SizedBox(
         height: 200,
         child: Center(
-          child: Text(
-            'Aucun véhicule enregistré',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
+          child: InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, '/matricule');
+            },
+            child: SizedBox(
+              width: double.infinity,
+              child: Card(
+                color: FigmaColors.neutral10,
+                child: const SizedBox(
+                  height: 200,
+                  child: Center(
+                    child: Icon(
+                      Icons.add,
+                      size: 80,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       );

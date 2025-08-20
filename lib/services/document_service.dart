@@ -136,6 +136,17 @@ class DocumentService {
       // Pour Android, utiliser le dossier app sans permissions spéciales
       // Les permissions de stockage sont complexes sur Android 13+
 
+      if (Platform.isAndroid) {
+        var status = await Permission.storage.status;
+        if (status.isDenied) {
+          final result = await Permission.storage.request();
+          if (result.isPermanentlyDenied) {
+            await openAppSettings();
+            return null;
+          }
+        }
+      }
+
       final token = await AuthService.getToken();
       if (token == null) {
         print('❌ Aucun token trouvé');

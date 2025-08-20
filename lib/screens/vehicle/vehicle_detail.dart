@@ -11,7 +11,6 @@ import 'package:save_your_car/theme/figma_text_style.dart';
 import 'package:save_your_car/widgets/Main_scaffold.dart';
 import 'package:save_your_car/theme/responsive_helper.dart';
 import 'package:save_your_car/api_service/api_service.dart';
-import 'package:save_your_car/services/token_storage.dart';
 import 'package:save_your_car/services/auth_service.dart';
 
 class VehicleDetail extends StatefulWidget {
@@ -380,62 +379,7 @@ class _VehicleDetailState extends State<VehicleDetail> {
                   ),
                 ),
 
-                // Bouton refresh (pour debug) - responsive positioning
-                Positioned(
-                  top: MediaQuery.of(context).size.height < 700 ? 48 : 68,
-                  right: isUserLoggedIn ? (MediaQuery.of(context).size.width < 400 ? 96 : 116) : (MediaQuery.of(context).size.width < 400 ? 56 : 70),
-                  child: GestureDetector(
-                    onTap: () {
-                      _checkUserToken();
-                      _loadDocuments();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: FigmaColors.neutral70,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.refresh,
-                        size: 20,
-                        color: FigmaColors.neutral00,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Bouton déconnexion (pour debug) - responsive positioning
-                if (isUserLoggedIn)
-                  Positioned(
-                    top: MediaQuery.of(context).size.height < 700 ? 48 : 68,
-                    right: MediaQuery.of(context).size.width < 400 ? 56 : 70,
-                    child: GestureDetector(
-                      onTap: () async {
-                        await AuthService.logout();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Déconnecté avec succès'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                        setState(() {
-                          isUserLoggedIn = false;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.logout,
-                          size: 20,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
+              
 
                 // Bouton de transfert (seulement si connecté) - responsive positioning
                 if (isUserLoggedIn)
@@ -459,42 +403,47 @@ class _VehicleDetailState extends State<VehicleDetail> {
                     ),
                   ),
 
-                // ← bloc des 3 cartes info - constrained for small screens
                 Positioned(
                   bottom: MediaQuery.of(context).size.height < 700 ? -42 : (ResponsiveHelper.isMobile(context) ? -48 : -54),
                   left: 0,
                   right: 0,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width < 400 ? 16 : 24),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _infoCard(
-                          icon: Transform.rotate(
-                            angle: -90 * 3.1415926535 / 180,
-                            child: const Icon(Icons.tune_rounded),
+                        Expanded(
+                          child: _infoCard(
+                            icon: Transform.rotate(
+                              angle: -90 * 3.1415926535 / 180,
+                              child: const Icon(Icons.tune_rounded),
+                            ),
+                            title: "Année",
+                            value: widget.vehicle.year?.toString() ?? "N/A",
+                            textStyle: textStyle,
                           ),
-                          title: "Année",
-                          value: widget.vehicle.year?.toString() ?? "N/A",
-                          textStyle: textStyle,
                         ),
-                        SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 6, tablet: 12, desktop: 12)),
-                        _infoCard(
-                          icon: const Icon(Icons.speed),
-                          title: "Kilométrage",
-                          value: widget.vehicle.mileage != null 
-                              ? "${NumberFormat('#,###').format(widget.vehicle.mileage).replaceAll(',', '.')}Km"
-                              : "N/A",
-                          textStyle: textStyle,
+                        SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 8, tablet: 12, desktop: 16)),
+                        Expanded(
+                          child: _infoCard(
+                            icon: const Icon(Icons.speed),
+                            title: "Kilométrage",
+                            value: widget.vehicle.mileage != null
+                                ? "${NumberFormat('#,###').format(widget.vehicle.mileage).replaceAll(',', '.')}Km"
+                                : "N/A",
+                            textStyle: textStyle,
+                          ),
                         ),
-                        SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 6, tablet: 12, desktop: 12)),
-                        _infoCard(
-                          icon: const Icon(Icons.calendar_month_rounded),
-                          title: "Contrôle",
-                          value: widget.vehicle.technicalControlDate != null
-                              ? DateFormat('dd/MM/yyyy').format(widget.vehicle.technicalControlDate!)
-                              : "N/A",
-                          textStyle: textStyle,
+                        SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 8, tablet: 12, desktop: 16)),
+                        Expanded(
+                          child: _infoCard(
+                            icon: const Icon(Icons.calendar_month_rounded),
+                            title: "Contrôle",
+                            value: widget.vehicle.technicalControlDate != null
+                                ? DateFormat('dd/MM/yyyy').format(widget.vehicle.technicalControlDate!)
+                                : "N/A",
+                            textStyle: textStyle,
+                          ),
                         ),
                       ],
                     ),
@@ -556,7 +505,6 @@ class _VehicleDetailState extends State<VehicleDetail> {
     required FigmaTextStyles textStyle,
   }) {
     return Container(
-      width: ResponsiveHelper.infoCardSize(context).width,
       height: ResponsiveHelper.infoCardSize(context).height,
       padding: EdgeInsets.all(ResponsiveHelper.responsiveSpacing(context, mobile: 8, tablet: 14, desktop: 16)),
       decoration: BoxDecoration(
@@ -600,7 +548,7 @@ class _VehicleDetailState extends State<VehicleDetail> {
           SizedBox(height: ResponsiveHelper.isMobile(context) ? 1 : 2),
           Flexible(
             child: Text(
-              value, 
+              value,
               style: textStyle.textMBold.copyWith(
                 fontSize: ResponsiveHelper.isMobile(context) ? 12 : null,
               ),

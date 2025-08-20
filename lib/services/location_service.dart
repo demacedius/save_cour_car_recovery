@@ -6,23 +6,53 @@ class LocationService {
   /// Vérifie et demande les permissions de localisation
   static Future<bool> requestLocationPermission() async {
     try {
-      // Vérifier le statut actuel de la permission
-      PermissionStatus permission = await Permission.locationWhenInUse.status;
+      // Vérifier d'abord le statut actuel
+      PermissionStatus status = await Permission.locationWhenInUse.status;
+      print('🔍 Statut permission actuel: $status');
       
-      if (permission.isDenied) {
-        // Demander la permission
-        permission = await Permission.locationWhenInUse.request();
+      // Si déjà accordée, retourner true
+      if (status.isGranted) {
+        print('✅ Permission déjà accordée');
+        return true;
       }
       
+      // Si refusée définitivement, ouvrir les paramètres
+      if (status.isPermanentlyDenied) {
+        print('⚠️ Permission définitivement refusée - ouverture paramètres');
+        await openAppSettings();
+        return false;
+      }
+      
+      // Si refusée, essayer avec Geolocator
+      if (status.isDenied) {
+        print('🔄 Tentative avec Geolocator...');
+        LocationPermission geoPermission = await Geolocator.checkPermission();
+        print('📍 Permission Geolocator: $geoPermission');
+        
+        if (geoPermission == LocationPermission.denied) {
+          geoPermission = await Geolocator.requestPermission();
+          print('📍 Nouvelle permission Geolocator: $geoPermission');
+          
+          if (geoPermission == LocationPermission.whileInUse || 
+              geoPermission == LocationPermission.always) {
+            return true;
+          }
+        }
+      }
+      
+      // Demander la permission avec permission_handler
+      print('🔄 Demande permission avec permission_handler...');
+      PermissionStatus permission = await Permission.locationWhenInUse.request();
+      print('📱 Résultat permission_handler: $permission');
+      
       if (permission.isPermanentlyDenied) {
-        // Ouvrir les paramètres si la permission est définitivement refusée
         await openAppSettings();
         return false;
       }
       
       return permission.isGranted;
     } catch (e) {
-      print('Erreur demande permission: $e');
+      print('❌ Erreur demande permission: $e');
       return false;
     }
   }
@@ -40,24 +70,26 @@ class LocationService {
   /// Récupère la position actuelle de l'utilisateur
   static Future<Position?> getCurrentPosition() async {
     try {
+      print('📍 Récupération de la position...');
+      
       // Vérifier si le service de localisation est activé
       bool serviceEnabled = await isLocationServiceEnabled();
       if (!serviceEnabled) {
         print('❌ Service de localisation désactivé');
-        return null;
+        throw Exception('Le service de localisation est désactivé. Activez-le dans les paramètres.');
       }
       
       // Vérifier les permissions
       bool hasPermission = await requestLocationPermission();
       if (!hasPermission) {
         print('❌ Permission de localisation refusée');
-        return null;
+        throw Exception('Permission de localisation refusée. Accordez les autorisations dans les paramètres.');
       }
       
       // Récupérer la position avec une configuration optimisée
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10), // Timeout de 10 secondes
+        desiredAccuracy: LocationAccuracy.medium,
+        timeLimit: const Duration(seconds: 15),
       );
       
       print('✅ Position récupérée: ${position.latitude}, ${position.longitude}');
@@ -65,7 +97,10 @@ class LocationService {
       
     } catch (e) {
       print('❌ Erreur récupération position: $e');
-      return null;
+      if (e.toString().contains('Permission') || e.toString().contains('location')) {
+        throw Exception('Impossible de récupérer votre position. Vérifiez que les autorisations de localisation sont accordées pour l\'application.');
+      }
+      throw Exception('Erreur lors de la récupération de votre position: ${e.toString()}');
     }
   }
   

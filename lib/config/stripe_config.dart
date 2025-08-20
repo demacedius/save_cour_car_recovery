@@ -1,12 +1,12 @@
 class StripeConfig {
   // Clés de test Stripe
-  static const String publishableKey = 'pk_test_51RXTcPPcMvKX08Wx0PhvZ6dFbwpogOfNXAzapkkRbXgFDxy29Yb2SVNklHlXm3ktlyKNjCWgIoyEqOvVUYmctds600573lehqN';
+  static const String publishableKey = 'pk_live_51RXTbdBO0KsxxPgtHxNFTFVnlTg5Nt9QyvWxneDeZI9bFYG0MU6xK11UdyfEBG2pm998fSJUKImbRXBbpJ4qZ43m00im0wiDTH';
   
   // La clé secrète ne doit JAMAIS être dans le code client
   // Elle sera uniquement utilisée côté backend
   
   // URLs du backend
-  static const String baseUrl = 'http://192.168.1.231:3334'; // À adapter selon votre configuration
+  static const String baseUrl = 'http://83.228.205.107:3334'; // À adapter selon votre configuration
   
   // Prix des abonnements (en centimes)
   static const int monthlyPriceInCents = 999; // 9,99€

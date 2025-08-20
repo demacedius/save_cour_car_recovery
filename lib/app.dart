@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:save_your_car/models/vehicles.dart';
 import 'package:save_your_car/screens/vehicle/klm_screen.dart';
 import 'routes/app_router.dart';
+import 'routes/NoAnimationPageRoute.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -13,8 +14,17 @@ class App extends StatelessWidget {
     return MaterialApp(
   debugShowCheckedModeBanner: false,
   initialRoute: '/',
-  routes: appRoutes,
   onGenerateRoute: (settings) {
+    final routes = appRoutes;
+    final builder = routes[settings.name];
+
+    if (builder != null) {
+      return NoAnimationPageRoute(
+        builder: builder,
+        settings: settings,
+      );
+    }
+
     if (settings.name == '/klm') {
       final arguments = settings.arguments;
       VehicleData? vehicle;
@@ -29,11 +39,11 @@ class App extends StatelessWidget {
       }
       
       if (vehicle != null) {
-        return MaterialPageRoute(
+        return NoAnimationPageRoute(
           builder: (_) => KlmScreen(vehicle: vehicle!),
         );
       } else {
-        return MaterialPageRoute(
+        return NoAnimationPageRoute(
           builder: (_) => const Scaffold(
             body: Center(child: Text('Erreur: Données véhicule invalides')),
           ),

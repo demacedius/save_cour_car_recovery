@@ -40,7 +40,11 @@ class _GarageListScreenState extends State<GarageListScreen> {
       Position? position = await LocationService.getCurrentPosition();
       
       if (position == null) {
-        throw Exception('Impossible de récupérer votre position. Vérifiez que la localisation est activée.');
+        bool serviceEnabled = await LocationService.isLocationServiceEnabled();
+        if (!serviceEnabled) {
+          throw Exception('Le service de localisation est desactive. Veuillez l\'activer dans les parametres de votre telephone.');
+        }
+        throw Exception('Impossible de recuperer votre position. Verifiez que les autorisations de localisation sont accordees pour l\'application.');
       }
       
       userPosition = position;

@@ -195,25 +195,24 @@ class _MyVehiclesState extends State<MyVehicles> {
                   ? const Center(child: CircularProgressIndicator())
                   : vehicles.isEmpty
                       ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.directions_car_outlined,
-                                size: 64,
-                                color: Colors.grey[400],
+                          child: InkWell(
+                            onTap: _handleAddVehicle,
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: Card(
+                                color: FigmaColors.neutral10,
+                                child: const SizedBox(
+                                  height: 200,
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.add,
+                                      size: 80,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
                               ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'Aucun véhicule enregistré',
-                                style: TextStyle(fontSize: 16, color: Colors.grey),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Appuyez sur + pour ajouter votre premier véhicule',
-                                style: TextStyle(fontSize: 14, color: Colors.grey),
-                              ),
-                            ],
+                            ),
                           ),
                         )
                       : ListView.builder(

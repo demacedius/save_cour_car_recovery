@@ -227,6 +227,24 @@ class MatriculeScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/sign_up');
+                  },
+                  child: const Text(
+                    'Ignorer cette étape',
+                    style: TextStyle(
+                      color: FigmaColors.primaryMain,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: 24),
                 ],
               ),
