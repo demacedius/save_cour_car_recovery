@@ -29,18 +29,12 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Cette application a besoin d'accéder à la caméra pour scanner les documents du
 			véhicule.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Cette application a besoin d'accéder à votre position pour trouver les garages à proximité.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Cette application a besoin d'accéder à votre position pour trouver les garages à proximité.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Cette application a besoin d'accéder à votre bibliothèque photo pour importer un document.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>location</string>
-	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -53,5 +47,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>UIBackgroundModes</key>
+	<array/>
 </dict>
 </plist>

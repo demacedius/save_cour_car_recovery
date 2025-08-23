@@ -479,25 +479,30 @@ class _PaywallScreenState extends State<PaywallScreen> {
     });
 
     try {
+      final plan = selectedIndex == 0 ? "monthly" : "yearly";
+      print('Starting subscription process for plan: $plan');
+
       // Créer l'abonnement selon le plan sélectionné
       Map<String, dynamic> result;
       
       if (selectedIndex == 0) {
-        // Plan mensuel avec essai gratuit
+        print('Creating monthly subscription...');
         result = await StripeService.createMonthlySubscription();
       } else {
-        // Plan annuel
+        print('Creating yearly subscription...');
         result = await StripeService.createYearlySubscription();
       }
 
-      print('✅ Abonnement créé: $result');
+      print('✅ Subscription creation result: $result');
 
       // Rafraîchir le statut d'abonnement
+      print('Refreshing subscription status after purchase...');
       final updatedSubscription = await StripeService.refreshSubscriptionAfterPurchase();
-      print('🔄 Statut après rafraîchissement: $updatedSubscription');
+      print('🔄 Subscription status after refresh: $updatedSubscription');
 
       // Afficher un message de succès
       if (mounted) {
+        print('Displaying success message');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -511,15 +516,17 @@ class _PaywallScreenState extends State<PaywallScreen> {
         );
 
         // Recharger les détails de l'abonnement
+        print('Reloading subscription details');
         await _loadSubscriptionStatus();
 
         // Retourner à l'écran précédent après un délai
         await Future.delayed(const Duration(seconds: 1));
+        print('Navigating back');
         Navigator.pop(context, true); // true indique le succès
       }
 
     } catch (e) {
-      print('❌ Erreur abonnement: $e');
+      print('❌ Error during subscription: $e');
       
       if (mounted) {
         String message = e.toString();

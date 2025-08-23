@@ -437,4 +437,29 @@ class UserService {
     } catch (e) {
     }
   }
+
+  static Future<bool> deleteAccount() async {
+    try {
+      final token = await AuthService.getToken();
+      if (token == null) {
+        return false;
+      }
+
+      final response = await http.delete(
+        Uri.parse('${ApiConfig.baseUrl}/api/user/delete'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        await logout();
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
 }

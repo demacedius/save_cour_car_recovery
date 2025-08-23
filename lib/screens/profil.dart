@@ -302,6 +302,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onTap: () => _runDiagnostic(),
                     ),
                     const SizedBox(height: 12),
+                    _ProfileOption(
+                      title: "Supprimer le compte",
+                      icon: Icons.delete_outline,
+                      onTap: () => _showDeleteAccountDialog(context),
+                    ),
                     const _LogoutButton(),
                   ],
                 ),
@@ -310,6 +315,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Supprimer le compte',
+            style: FigmaTextStyles().textLBold,
+          ),
+          content: Text(
+            'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.',
+            style: FigmaTextStyles().textMRegular,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Annuler',
+                style: FigmaTextStyles().textMSemiBold.copyWith(
+                  color: FigmaColors.neutral70,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await UserService.deleteAccount();
+                
+                if (context.mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+                    (route) => false,
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(
+                'Supprimer',
+                style: FigmaTextStyles().textMSemiBold,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

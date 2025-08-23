@@ -271,64 +271,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final isSmallScreen = MediaQuery.of(context).size.width < 400;
-                      final buttonWidth = isSmallScreen ? (constraints.maxWidth - 16) / 2 : 160.0;
-                      
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Flexible(
-                            child: Container(
-                              width: buttonWidth,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF5F5F5),
-                                borderRadius: BorderRadius.circular(100),
-                              ),
-                              child: Center(
-                                child: GoogleAuthButton(
-                                  onPressed: () {
-                                    // Connexion avec Google
-                                  },
-                                  style: const AuthButtonStyle(
-                                    buttonType: AuthButtonType.icon,
-                                    buttonColor: Color(0xFFF6F6F6),
-                                    borderRadius: 12,
-                                    elevation: 0,
-                                    borderColor: Colors.transparent,
-                                    iconSize: 24,
-                                    separator: 0,
-                                    textStyle: TextStyle(color: Colors.transparent),
-                                    iconType: AuthIconType.secondary,
-                                    iconBackground: Color(0xffF6F6F6),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: isSmallScreen ? 8 : 16),
-                          Flexible(
-                            child: Container(
-                              width: buttonWidth,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF5F5F5),
-                                borderRadius: BorderRadius.circular(100),
-                              ),
-                              child: IconButton(
-                                icon: const Icon(Icons.apple, size: 24),
-                                onPressed: () {},
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
+                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

@@ -68,6 +68,7 @@ func main() {
 		protected.PUT("/api/user/profile", handlers.UpdateUserProfile)
 		protected.PUT("/api/user/password", handlers.UpdatePassword)
 		protected.POST("/api/user/profile-picture", handlers.UploadProfilePicture)
+		protected.DELETE("/api/user/delete", handlers.DeleteUser)
 
 		// Routes rendez-vous
 		protected.POST("/appointments", handlers.CreateAppointment)

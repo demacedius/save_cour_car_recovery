@@ -397,118 +397,15 @@ class StripeService {
   /// Vérifie si l'utilisateur a un abonnement actif
   static Future<bool> hasActiveSubscription() async {
     try {
-      print('🚀 DÉBUT hasActiveSubscription()');
       final status = await getSubscriptionStatus();
-      print('🔍 Debug hasActiveSubscription reçu: $status');
-      
       if (status == null) {
-        print('🔍 Aucun abonnement trouvé');
         return false;
       }
-      
-      final subscriptionStatus = status['status'];
-      final isActive = status['is_active'];
-      final isTrialing = status['is_trialing'];
-      
-      print('🔍 Status: $subscriptionStatus, isActive: $isActive, isTrialing: $isTrialing');
-      
-      // Debug: log détaillé du statut
-      print('🔍 Debug statut abonnement détaillé:');
-      print('   - Status brut: $subscriptionStatus');
-      print('   - is_active: $isActive');
-      print('   - is_trialing: $isTrialing');
-      print('   - Données complètes: $status');
-      
-      // Logique améliorée pour déterminer si l'abonnement est actif
-      bool hasValidSubscription = false;
-      final currentPeriodStart = status['current_period_start'];
-      final currentPeriodEnd = status['current_period_end'];
-      
-      // Analyser les dates pour déterminer la validité
-      DateTime? startDate;
-      DateTime? endDate;
-      DateTime nowUtc = DateTime.now().toUtc();
-      
-      try {
-        if (currentPeriodStart != null) {
-          startDate = DateTime.parse(currentPeriodStart.toString()).toUtc();
-        }
-        if (currentPeriodEnd != null) {
-          endDate = DateTime.parse(currentPeriodEnd.toString()).toUtc();
-        }
-      } catch (e) {
-        print('⚠️ Erreur parsing dates: $e');
-      }
-      
-      print('🔍 Analyse des dates:');
-      print('   - Période commence: $startDate');
-      print('   - Période expire: $endDate');
-      print('   - Maintenant (UTC): $nowUtc');
-      
-      // 1. Vérifier d'abord si nous sommes dans une période d'abonnement valide
-      bool isInValidPeriod = false;
-      if (startDate != null && endDate != null) {
-        // Debug détaillé des comparaisons
-        final isAfterStart = nowUtc.isAfter(startDate);
-        final isBeforeEnd = nowUtc.isBefore(endDate);
-        isInValidPeriod = isAfterStart && isBeforeEnd;
-        
-        print('🔍 Analyse période détaillée:');
-        print('   - nowUtc.isAfter(startDate): $isAfterStart');
-        print('   - nowUtc.isBefore(endDate): $isBeforeEnd');
-        print('   - Dans période valide: $isInValidPeriod');
-      }
-      
-      // 2. Si is_active est explicitement défini par le backend, l'utiliser en priorité
-      if (isActive == true) {
-        hasValidSubscription = true;
-        print('🔍 Utilisation is_active=true du backend');
-      }
-      // 3. Si is_trialing est true, c'est actif
-      else if (isTrialing == true) {
-        hasValidSubscription = true;
-        print('🔍 Abonnement en période d\'essai');
-      }
-      // 4. Si le statut est directement valide
-      else if (subscriptionStatus == 'active' || subscriptionStatus == 'trialing') {
-        hasValidSubscription = true;
-        print('🔍 Statut directement valide: $subscriptionStatus');
-      }
-      // 5. CAS SPÉCIAL: Si statut "incomplete" mais nous sommes dans une période valide
-      //    et que l'abonnement a été créé récemment (probablement paiement réussi)
-      else if (subscriptionStatus == 'incomplete' && isInValidPeriod) {
-        // Pour les abonnements "incomplete" avec période valide, vérifier si récent
-        if (startDate != null) {
-          final createdRecently = nowUtc.difference(startDate).inDays < 7; // 7 jours de grâce
-          if (createdRecently) {
-            hasValidSubscription = true;
-            print('🔍 ✅ ABONNEMENT INCOMPLETE MAIS PÉRIODE VALIDE ET RÉCENT - TRAITÉ COMME ACTIF');
-            print('   - Créé il y a: ${nowUtc.difference(startDate).inDays} jours');
-            print('   - Expire dans: ${endDate!.difference(nowUtc).inDays} jours');
-          } else {
-            print('🔍 Abonnement incomplete trop ancien (${nowUtc.difference(startDate).inDays} jours)');
-          }
-        }
-      }
-      // 6. Autres cas "incomplete" avec logique précédente
-      else if (subscriptionStatus == 'incomplete') {
-        final createdAt = status['created_at'];
-        if (createdAt != null && endDate != null) {
-          try {
-            final createdDate = DateTime.parse(createdAt.toString()).toUtc();
-            final isRecent = nowUtc.difference(createdDate).inHours < 24;
-            final isStillValid = endDate.isAfter(nowUtc);
-            
-            hasValidSubscription = isRecent && isStillValid;
-            print('🔍 Abonnement incomplete classique - récent: $isRecent, valide: $isStillValid');
-          } catch (e) {
-            print('⚠️ Erreur parsing created_at: $e');
-          }
-        }
-      }
-      
-      print('🔍 Résultat final hasActiveSubscription: $hasValidSubscription');
-      return hasValidSubscription;
+
+      final bool isActive = status['is_active'] ?? false;
+      final bool isTrialing = status['is_trialing'] ?? false;
+
+      return isActive || isTrialing;
     } catch (e) {
       print('❌ Erreur vérification abonnement actif: $e');
       return false;

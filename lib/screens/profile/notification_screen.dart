@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:save_your_car/services/notification_service.dart';
 import 'package:save_your_car/theme/figma_color.dart';
 import 'package:save_your_car/theme/figma_text_style.dart';
 
@@ -76,7 +77,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
             'Recevoir des notifications sur votre appareil',
             Icons.phone_android,
             pushNotifications,
-            (value) => setState(() => pushNotifications = value),
+            (value) async {
+              setState(() => pushNotifications = value);
+              if (value) {
+                await NotificationService.requestPermissions();
+                await NotificationService.requestPreciseAlarmsPermission();
+              } else {
+                await NotificationService.cancelAllNotifications();
+              }
+            },
           ),
 
           _buildNotificationTile(

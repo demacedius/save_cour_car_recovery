@@ -29,8 +29,8 @@ void main() async{
   // Initialiser les notifications
   try {
     await NotificationService.initialize();
-    await NotificationService.requestPermissions();
-    await NotificationService.requestPreciseAlarmsPermission();
+    // await NotificationService.requestPermissions();
+    // await NotificationService.requestPreciseAlarmsPermission();
     print('🔔 Notifications initialisées avec succès');
   } catch (e) {
     print('❌ Erreur initialisation notifications: $e');
