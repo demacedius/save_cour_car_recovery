@@ -44,6 +44,7 @@ func main() {
 	r.POST("/vehicles/from-plate", handlers.GetVehicleFromPlate)
 	r.POST("/forgot-password", handlers.ForgotPassword)
 	r.POST("/reset-password", handlers.ResetPassword)
+	r.POST("/stripe-webhook", handlers.HandleStripeWebhook) // Webhook Stripe (non protégé)
 
 	// Routes protégées
 	protected := r.Group("/")
