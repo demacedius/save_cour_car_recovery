@@ -310,6 +310,38 @@ class StripeService {
     return await getSubscriptionStatus(forceRefresh: true);
   }
 
+  /// Récupère le client secret pour un abonnement incomplet ou en essai
+  static Future<Map<String, dynamic>?> _fetchClientSecretForIncompleteSubscription() async {
+    try {
+      final token = await AuthService.getToken();
+      if (token == null) {
+        throw Exception('Token d\'authentification manquant');
+      }
+
+      final response = await http.get(
+        Uri.parse('${StripeConfig.baseUrl}/subscription-client-secret'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print('📊 Status récupération client secret: ${response.statusCode}');
+      print('📄 Réponse client secret: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else if (response.statusCode == 404) {
+        print('🔍 Aucun client secret trouvé pour un abonnement incomplet (404)');
+        return null;
+      } else {
+        throw Exception('Erreur récupération client secret: ${response.body}');
+      }
+    } catch (e) {
+      print('❌ Erreur _fetchClientSecretForIncompleteSubscription: $e');
+      return null;
+    }
+  }
+
   /// Diagnostique et tente de résoudre les problèmes d'abonnement "incomplete"
   static Future<void> diagnosticIncompleteSubscription() async {
     print('🔧 Diagnostic abonnement incomplete...');
@@ -327,44 +359,45 @@ class StripeService {
           print('   - created_at: $createdAt');
           print('   - current_period_end: $currentPeriodEnd');
           
-          // Vérifier si c'est un abonnement récent et potentiellement valide
-          bool shouldTreatAsActive = false;
-          try {
-            if (createdAt != null && currentPeriodEnd != null) {
-              final startDate = DateTime.parse(createdAt.toString());
-              final endDate = DateTime.parse(currentPeriodEnd.toString());
-              final now = DateTime.now();
-              
-              final isRecent = now.difference(startDate).inHours < 24;
-              final isStillValid = endDate.isAfter(now);
-              shouldTreatAsActive = isRecent && isStillValid;
-              
-              print('   - Est récent (< 24h): $isRecent');
-              print('   - Est encore valide: $isStillValid');
-              print('   - Traiter comme actif: $shouldTreatAsActive');
-            }
-          } catch (e) {
-            print('   - Erreur parsing dates: $e');
-          }
-          
-          if (shouldTreatAsActive) {
-            print('✅ Abonnement incomplete mais considéré comme valide');
-          } else {
-            print('🔄 Tentative de rafraîchissement...');
-            
-            // Attendre et rafraîchir plusieurs fois si nécessaire
-            for (int i = 0; i < 3; i++) {
-              await Future.delayed(const Duration(seconds: 3));
-              final refreshed = await getSubscriptionStatus(forceRefresh: true);
-              
-              if (refreshed != null && refreshed['status'] != 'incomplete') {
-                print('✅ Statut résolu après ${i + 1} tentatives: ${refreshed['status']}');
-                break;
+          // Tenter de récupérer le client secret et de présenter le Payment Sheet
+          final clientSecretData = await _fetchClientSecretForIncompleteSubscription();
+          if (clientSecretData != null) {
+            final clientSecret = clientSecretData['client_secret'];
+            final setupRequired = clientSecretData['setup_required'] ?? false;
+
+            if (clientSecret != null) {
+              try {
+                if (setupRequired) {
+                  await Stripe.instance.initPaymentSheet(
+                    paymentSheetParameters: SetupPaymentSheetParameters(
+                      setupIntentClientSecret: clientSecret,
+                      merchantDisplayName: 'Save Your Car',
+                      style: ThemeMode.system,
+                    ),
+                  );
+                } else {
+                  await Stripe.instance.initPaymentSheet(
+                    paymentSheetParameters: SetupPaymentSheetParameters(
+                      paymentIntentClientSecret: clientSecret,
+                      merchantDisplayName: 'Save Your Car',
+                      style: ThemeMode.system,
+                    ),
+                  );
+                }
+                await Stripe.instance.presentPaymentSheet();
+                print('✅ Payment Sheet présentée avec succès pour abonnement incomplete.');
+                // Rafraîchir le statut après la tentative de paiement
+                await getSubscriptionStatus(forceRefresh: true);
+              } catch (e) {
+                print('❌ Erreur lors de la présentation du Payment Sheet pour incomplete: $e');
               }
-              
-              print('🔄 Tentative ${i + 1}/3 - statut toujours incomplete');
             }
+          } else {
+            print('🔍 Pas de client secret disponible pour abonnement incomplete.');
           }
+
+          // Rafraîchir le statut pour s'assurer qu'il est à jour après le diagnostic
+          await getSubscriptionStatus(forceRefresh: true);
         }
       }
     } catch (e) {
@@ -474,70 +507,10 @@ class StripeService {
     } else if (status == 'past_due') {
       statusText = 'Paiement en retard';
       statusColor = 'orange';
-    } else if (status == 'incomplete') {
-      // Utiliser la même logique que hasActiveSubscription()
-      final now = DateTime.now();
-      final currentPeriodStart = subscription['current_period_start'];
-      final currentPeriodEnd = subscription['current_period_end'];
-      
-      bool shouldTreatAsActive = false;
-      
-      // 1. Vérifier si nous sommes dans une période d'abonnement valide
-      try {
-        if (currentPeriodStart != null && currentPeriodEnd != null) {
-          final startDate = DateTime.parse(currentPeriodStart.toString()).toUtc();
-          final endDate = DateTime.parse(currentPeriodEnd.toString()).toUtc();
-          final nowUtc = DateTime.now().toUtc();
-          
-          final isAfterStart = nowUtc.isAfter(startDate);
-          final isBeforeEnd = nowUtc.isBefore(endDate);
-          final isInValidPeriod = isAfterStart && isBeforeEnd;
-          final createdRecently = nowUtc.difference(startDate).inDays < 7; // 7 jours de grâce
-          
-          print('🔍 DEBUG getSubscriptionDetails incomplete:');
-          print('   - startDate (UTC): $startDate');
-          print('   - endDate (UTC): $endDate');
-          print('   - nowUtc: $nowUtc');
-          print('   - nowUtc.isAfter(startDate): $isAfterStart');
-          print('   - nowUtc.isBefore(endDate): $isBeforeEnd');
-          print('   - isInValidPeriod: $isInValidPeriod');
-          print('   - createdRecently: $createdRecently');
-          
-          // Si nous sommes dans la période valide ET créé récemment, traiter comme actif
-          if (isInValidPeriod && createdRecently) {
-            shouldTreatAsActive = true;
-            print('🔍 ✅ getSubscriptionDetails: Abonnement incomplete mais période valide');
-          }
-        }
-      } catch (e) {
-        print('⚠️ Erreur parsing dates incomplete dans getSubscriptionDetails: $e');
-      }
-      
-      // 2. Fallback sur l'ancienne logique pour compatibilité
-      if (!shouldTreatAsActive) {
-        final createdAt = subscription['created_at'];
-        try {
-          if (createdAt != null && currentPeriodEnd != null) {
-            final startDate = DateTime.parse(createdAt.toString());
-            final endDate = DateTime.parse(currentPeriodEnd.toString());
-            
-            final isRecent = now.difference(startDate).inHours < 24;
-            final isStillValid = endDate.isAfter(now);
-            shouldTreatAsActive = isRecent && isStillValid;
-          }
-        } catch (e) {
-          print('⚠️ Erreur parsing dates incomplete fallback: $e');
-        }
-      }
-      
-      if (shouldTreatAsActive) {
-        statusText = 'Abonnement actif';
-        statusColor = 'green';
-        isActive = true; // Traiter comme actif
-      } else {
-        statusText = 'Abonnement en cours de traitement';
-        statusColor = 'orange';
-      }
+      } else if (status == 'incomplete') {
+      statusText = 'Abonnement en attente de paiement';
+      statusColor = 'orange';
+      isActive = false;
     } else {
       statusText = 'Abonnement inactif';
       statusColor = 'orange';

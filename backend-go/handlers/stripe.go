@@ -260,3 +260,55 @@ func CancelSubscription(c *gin.Context) {
 		"current_period_end":   time.Unix(stripeSubscription.CurrentPeriodEnd, 0),
 	})
 }
+
+// GetSubscriptionClientSecret récupère le client secret pour un abonnement incomplet
+func GetSubscriptionClientSecret(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Non autorisé"})
+		return
+	}
+
+	var sub models.Subscription
+	err := database.DB.QueryRow("SELECT stripe_subscription_id, status FROM subscriptions WHERE user_id = $1", userID).Scan(&sub.StripeSubscriptionID, &sub.Status)
+	if err == sql.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Aucun abonnement trouvé pour cet utilisateur"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Erreur récupération abonnement", "error": err.Error()})
+		return
+	}
+
+	if sub.Status != string(stripe.SubscriptionStatusIncomplete) && sub.Status != string(stripe.SubscriptionStatusTrialing) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "L'abonnement n'est pas dans un état nécessitant un client secret (incomplete ou trialing)"})
+		return
+	}
+
+	stripeSubscription, err := subscription.Get(sub.StripeSubscriptionID, &stripe.SubscriptionParams{
+		Expand: []*string{stripe.String("pending_setup_intent"), stripe.String("latest_invoice.payment_intent")},
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Erreur récupération abonnement Stripe", "error": err.Error()})
+		return
+	}
+
+	var clientSecret string
+	var setupRequired bool
+
+	if stripeSubscription.PendingSetupIntent != nil {
+		clientSecret = stripeSubscription.PendingSetupIntent.ClientSecret
+		setupRequired = true
+	} else if stripeSubscription.LatestInvoice != nil && stripeSubscription.LatestInvoice.PaymentIntent != nil {
+		clientSecret = stripeSubscription.LatestInvoice.PaymentIntent.ClientSecret
+		setupRequired = false
+	} else {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Client secret non trouvé pour cet abonnement"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"client_secret": clientSecret,
+		"setup_required": setupRequired,
+	})
+}

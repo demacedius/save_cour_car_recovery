@@ -82,6 +82,7 @@ func main() {
 		protected.POST("/create-subscription", handlers.CreateSubscription)
 		protected.GET("/subscription-status", handlers.GetSubscriptionStatus)
 		protected.POST("/cancel-subscription", handlers.CancelSubscription)
+		protected.GET("/subscription-client-secret", handlers.GetSubscriptionClientSecret)
 	}
 
 	// Routes statiques pour les photos de profil
@@ -95,7 +96,7 @@ func main() {
 	// Démarrer le serveur
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3334" // Utiliser 3334 pour correspondre au frontend
+		port = "3334" 
 	}
 
 	log.Printf("Serveur démarré sur le port %s", port)
