@@ -13,8 +13,8 @@ class StripeConfig {
   static const int yearlyPriceInCents = 2999; // 29,99€
   
   // IDs des prix Stripe (remplacez par les vrais IDs de votre dashboard)
-  static const String monthlyPriceId = 'price_1RY34DPcMvKX08WxVEcPQcGM'; // Remplacer par l'ID réel du prix mensuel
-  static const String yearlyPriceId = 'price_1RY37QPcMvKX08WxNHTKBpJe';   // Remplacer par l'ID réel du prix annuel
+  static const String monthlyPriceId = 'price_1RzNCQBO0KsxxPgtqALYncGp'; // Remplacer par l'ID réel du prix mensuel
+  static const String yearlyPriceId = 'price_1RzN3OBO0KsxxPgtkwx0kuZJ';   // Remplacer par l'ID réel du prix annuel
   
   // Configuration de l'essai gratuit
   static const int freeTrialDays = 3;
