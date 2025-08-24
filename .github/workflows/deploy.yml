@@ -70,6 +70,7 @@
               docker run -d \
                 --name go-backend \
                 --network app-network \
+                -p 127.0.0.1:3334:3334 \
                 --restart always \
                 --env-file ~/save_cour_car_recovery/.env \
                 ghcr.io/${{ github.repository }}:latest
