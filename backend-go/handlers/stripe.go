@@ -312,7 +312,7 @@ func GetSubscriptionClientSecret(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		client_secret": clientSecret,
+		"client_secret":  clientSecret,
 		"setup_required": setupRequired,
 	})
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	
 
 	"github.com/stripe/stripe-go/v76"
 	"github.com/stripe/stripe-go/v76/price"

@@ -22,8 +22,7 @@ services:
     restart: always
     depends_on:
       - db
-    ports:
-      - "${PORT}:3334"
+    
     environment:
       - DB_HOST=db
       - DB_PORT=5432

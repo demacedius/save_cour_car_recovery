@@ -44,7 +44,7 @@ func main() {
 	r.POST("/vehicles/from-plate", handlers.GetVehicleFromPlate)
 	r.POST("/forgot-password", handlers.ForgotPassword)
 	r.POST("/reset-password", handlers.ResetPassword)
-	r.POST("/stripe-webhook", handlers.HandleStripeWebhook) // Webhook Stripe (non protégé)
+	r.POST("/stripe-webhook", handlers.HandleStripeWebhook)
 
 	// Routes protégées
 	protected := r.Group("/")
@@ -97,11 +97,11 @@ func main() {
 	// Démarrer le serveur
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3334" 
+		port = "3334"
 	}
 
 	log.Printf("Serveur démarré sur le port %s", port)
 	r.Run(":" + port)
-	//triger CI correction
+	//triger CI corrections
 
 }
