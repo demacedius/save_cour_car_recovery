@@ -6,7 +6,7 @@ class StripeConfig {
   // Elle sera uniquement utilisée côté backend
   
   // URLs du backend
-  static const String baseUrl = 'http://83.228.205.107:3334'; // À adapter selon votre configuration
+  static const String baseUrl = 'https://saveyourcar.fr';
   
   // Prix des abonnements (en centimes)
   static const int monthlyPriceInCents = 999; // 9,99€

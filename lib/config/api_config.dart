@@ -5,7 +5,7 @@ class ApiConfig {
   // Utiliser l'IP alternative du Mac
   static String get baseUrl {
     // IP alternative qui fonctionnait
-    return 'http://83.228.205.107:3334';
+    return 'https://saveyourcar.fr';
   }
   
   // Tentative de détection d'émulateur (approximative)
