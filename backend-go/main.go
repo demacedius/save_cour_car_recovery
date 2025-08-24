@@ -102,6 +102,6 @@ func main() {
 
 	log.Printf("Serveur démarré sur le port %s", port)
 	r.Run(":" + port)
-	//triger CI corrections
+	//triger CI corrections 2
 
 }
