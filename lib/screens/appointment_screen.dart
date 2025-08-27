@@ -419,7 +419,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            ..._buildTechnicalControlReminders(),
+                            ..._buildTechnicalControlReminders(context),
                           ],
                         ),
                       ),
@@ -1206,7 +1206,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
   }
 
   /// Construit les cartes pense-bêtes pour les contrôles techniques
-  List<Widget> _buildTechnicalControlReminders() {
+  List<Widget> _buildTechnicalControlReminders(BuildContext context) {
     final List<Widget> reminders = [];
     final now = DateTime.now();
     
@@ -1366,15 +1366,17 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.25),
                     decoration: BoxDecoration(
                       color: iconColor,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       urgencyText,
+                      textAlign: TextAlign.center,
                       style: textStyle.textLSemiBold.copyWith(
                         color: Colors.white,
-                        fontSize: 11,
+                        fontSize: (MediaQuery.of(context).size.width / 375) * 11,
                       ),
                     ),
                   ),
@@ -1401,7 +1403,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                             "Rappel",
                             style: textStyle.textLSemiBold.copyWith(
                               color: iconColor,
-                              fontSize: 11,
+                              fontSize: (MediaQuery.of(context).size.width / 375) * 12,
                             ),
                           ),
                         ],

@@ -39,19 +39,13 @@ class VehicleCard extends StatelessWidget {
                   width: ResponsiveHelper.vehicleCardSize(context).width,
                   height: ResponsiveHelper.vehicleCardSize(context).height,
                   child: vehicle.imageUrl != null 
-                    ? Stack(
-                        children: [
-                          Image.network(
-                            vehicle.imageUrl!, 
-                            width: ResponsiveHelper.vehicleCardSize(context).width,
-                            height: ResponsiveHelper.vehicleCardSize(context).height,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) => 
-                              Image.asset('assets/images/car-parts 1.png', fit: BoxFit.cover),
-                          ),
-            
-                         
-                        ],
+                    ? Image.network(
+                        vehicle.imageUrl!, 
+                        width: ResponsiveHelper.vehicleCardSize(context).width,
+                        height: ResponsiveHelper.vehicleCardSize(context).height,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => 
+                          Image.asset('assets/images/car-parts 1.png', fit: BoxFit.cover),
                       )
                     : Image.asset('assets/images/car-parts 1.png', fit: BoxFit.cover),
                 ),
