@@ -592,80 +592,70 @@ class _VehicleDetailState extends State<VehicleDetail> {
                     ),
                   ),
 
-                // Bloc des 2 rangées de cartes info
-                Positioned(
-                  bottom: MediaQuery.of(context).size.height < 700 ? -96 : -108,
-                  left: 0,
-                  right: 0,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Center(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _infoCard(
-                                icon: Transform.rotate(
-                                  angle: -90 * 3.1415926535 / 180,
-                                  child: const Icon(Icons.tune_rounded),
-                                ),
-                                title: "Année",
-                                value: widget.vehicle.year?.toString() ?? "N/A",
-                                textStyle: textStyle,
-                              ),
-                              SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20)),
-                              _infoCard(
-                                icon: const Icon(Icons.speed),
-                                title: "Kilométrage",
-                                value: widget.vehicle.mileage != null
-                                    ? "${NumberFormat('#,###').format(widget.vehicle.mileage).replaceAll(',', '.')}Km"
-                                    : "N/A",
-                                textStyle: textStyle,
-                              ),
-                              SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20)),
-                              _infoCard(
-                                icon: const Icon(Icons.calendar_month_rounded),
-                                title: "Contrôle",
-                                value: widget.vehicle.technicalControlDate != null
-                                    ? DateFormat('dd/MM/yyyy').format(widget.vehicle.technicalControlDate!)
-                                    : "N/A",
-                                textStyle: textStyle,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _infoCard(
-                              icon: const Icon(Icons.local_gas_station),
-                              title: "Type moteur",
-                              value: widget.vehicle.engineType ?? "N/A",
-                              textStyle: textStyle,
-                            ),
-                            SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20)),
-                            _infoCard(
-                              icon: const Icon(Icons.settings),
-                              title: "Cylindrée",
-                              value: widget.vehicle.displacement ?? "N/A",
-                              textStyle: textStyle,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
 
-            SizedBox(height: MediaQuery.of(context).size.height < 700 ? 112 : 124), // Espace pour les 2 rangées de cards
+            // Cartes info directement sous le header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _infoCard(
+                        icon: Transform.rotate(
+                          angle: -90 * 3.1415926535 / 180,
+                          child: const Icon(Icons.tune_rounded),
+                        ),
+                        title: "Année",
+                        value: widget.vehicle.year?.toString() ?? "N/A",
+                        textStyle: textStyle,
+                      ),
+                      SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20)),
+                      _infoCard(
+                        icon: const Icon(Icons.speed),
+                        title: "Kilométrage",
+                        value: widget.vehicle.mileage != null
+                            ? "${NumberFormat('#,###').format(widget.vehicle.mileage).replaceAll(',', '.')}Km"
+                            : "N/A",
+                        textStyle: textStyle,
+                      ),
+                      SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20)),
+                      _infoCard(
+                        icon: const Icon(Icons.calendar_month_rounded),
+                        title: "Contrôle",
+                        value: widget.vehicle.technicalControlDate != null
+                            ? DateFormat('dd/MM/yyyy').format(widget.vehicle.technicalControlDate!)
+                            : "N/A",
+                        textStyle: textStyle,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _infoCard(
+                        icon: const Icon(Icons.local_gas_station),
+                        title: "Type moteur",
+                        value: widget.vehicle.engineType ?? "N/A",
+                        textStyle: textStyle,
+                      ),
+                      SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20)),
+                      _infoCard(
+                        icon: const Icon(Icons.settings),
+                        title: "Cylindrée",
+                        value: widget.vehicle.displacement ?? "N/A",
+                        textStyle: textStyle,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
 
             Padding(
               padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width < 400 ? 16 : 24),
