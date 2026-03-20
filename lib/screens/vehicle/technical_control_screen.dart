@@ -3,6 +3,7 @@ import 'package:save_your_car/models/vehicles.dart';
 import 'package:save_your_car/theme/figma_color.dart';
 import 'package:save_your_car/widgets/stepper_components.dart';
 import 'package:save_your_car/services/auth_service.dart';
+import 'package:save_your_car/screens/auth/sign_up_screen.dart';
 import 'package:save_your_car/api_service/user_vehicles.dart';
 import 'package:save_your_car/services/notification_service.dart';
 import 'package:intl/intl.dart';
@@ -54,8 +55,13 @@ class _TechnicalControlScreenState extends State<TechnicalControlScreen> {
       // Utilisateur connecté : enregistrer directement le véhicule
       await _saveVehicleForLoggedUser(updatedVehicle, token);
     } else {
-      // Session expirée : rediriger vers la connexion
-      if (mounted) {
+      // Vérifier si c'est un utilisateur avec un compte existant (session expirée)
+      // ou un nouvel utilisateur sans compte
+      final hadAccount = await AuthService.needsLogin();
+      if (!mounted) return;
+
+      if (hadAccount) {
+        // Session expirée : rediriger vers la connexion
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Session expirée. Veuillez vous reconnecter.'),
@@ -63,6 +69,14 @@ class _TechnicalControlScreenState extends State<TechnicalControlScreen> {
           ),
         );
         Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+      } else {
+        // Nouvel utilisateur : aller vers l'inscription avec le véhicule
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SignUpScreen(vehicle: updatedVehicle),
+          ),
+        );
       }
     }
   }
