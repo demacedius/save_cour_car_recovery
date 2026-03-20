@@ -133,13 +133,15 @@ func createTables() {
 		log.Fatal("Erreur création table subscriptions:", err)
 	}
 
-	// Ajouter la colonne brand_image_url si elle n'existe pas
+	// Ajouter les colonnes manquantes à vehicles si elles n'existent pas
 	alterVehicleTable := `
-	ALTER TABLE vehicles 
-	ADD COLUMN IF NOT EXISTS brand_image_url TEXT;`
-	
+	ALTER TABLE vehicles
+	ADD COLUMN IF NOT EXISTS brand_image_url TEXT,
+	ADD COLUMN IF NOT EXISTS engine_type VARCHAR(50),
+	ADD COLUMN IF NOT EXISTS displacement VARCHAR(50);`
+
 	if _, err := DB.Exec(alterVehicleTable); err != nil {
-		log.Printf("Info: Colonne brand_image_url déjà existante ou erreur: %v", err)
+		log.Printf("Info: Colonnes vehicles déjà existantes ou erreur: %v", err)
 	}
 
 	// Ajouter les nouvelles colonnes de profil utilisateur

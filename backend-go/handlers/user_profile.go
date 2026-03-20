@@ -298,3 +298,42 @@ func ServeProfilePicture(c *gin.Context) {
 
 	c.File(filePath)
 }
+
+func DeleteUser(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Utilisateur non authentifié"})
+		return
+	}
+
+	tx, err := database.DB.Begin()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création de la transaction"})
+		return
+	}
+
+	// Delete user's data in a specific order to avoid foreign key violations
+	queries := []string{
+		"DELETE FROM documents WHERE user_id = $1",
+		"DELETE FROM appointments WHERE user_id = $1",
+		"DELETE FROM subscriptions WHERE user_id = $1",
+		"DELETE FROM vehicles WHERE user_id = $1",
+		"DELETE FROM users WHERE id = $1",
+	}
+
+	for _, query := range queries {
+		_, err := tx.Exec(query, userID)
+		if err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la suppression du compte"})
+			return
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la validation de la transaction"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Compte supprimé avec succès"})
+}
