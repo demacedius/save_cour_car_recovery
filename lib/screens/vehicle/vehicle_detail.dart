@@ -387,7 +387,9 @@ class _VehicleDetailState extends State<VehicleDetail> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
+            SizedBox(
+              height: ResponsiveHelper.headerHeight(context) + ResponsiveHelper.infoCardSize(context).height / 2,
+              child: Stack(
               clipBehavior: Clip.none,
               children: [
                 Container(
@@ -539,11 +541,12 @@ class _VehicleDetailState extends State<VehicleDetail> {
                   ),
                 ),
 
-                // Cards en scroll horizontal, sortant du bas du header
+                // Cards en scroll horizontal, centrées sur le bas du header
                 Positioned(
-                  bottom: ResponsiveHelper.isSmallHeight(context) ? -45 : -50,
+                  bottom: 0,
                   left: 0,
                   right: 0,
+                  height: ResponsiveHelper.infoCardSize(context).height,
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -596,9 +599,9 @@ class _VehicleDetailState extends State<VehicleDetail> {
                 ),
               ],
             ),
+            ), // SizedBox
 
-            // Espace pour les cards qui dépassent du header
-            SizedBox(height: ResponsiveHelper.isSmallHeight(context) ? 61 : 66),
+            const SizedBox(height: 20),
 
             Padding(
               padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width < 400 ? 16 : 24),
