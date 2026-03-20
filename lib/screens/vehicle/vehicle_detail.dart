@@ -413,7 +413,7 @@ class _VehicleDetailState extends State<VehicleDetail> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(height: MediaQuery.of(context).padding.top + 8),
+                      const SizedBox(height: 24),
                       widget.vehicle.brandImageUrl != null
                           ? Image.network(
                               widget.vehicle.brandImageUrl!,
@@ -539,61 +539,66 @@ class _VehicleDetailState extends State<VehicleDetail> {
                   ),
                 ),
 
+                // Cards en scroll horizontal, sortant du bas du header
+                Positioned(
+                  bottom: ResponsiveHelper.isSmallHeight(context) ? -45 : -50,
+                  left: 0,
+                  right: 0,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Row(
+                      children: [
+                        _infoCard(
+                          icon: Transform.rotate(
+                            angle: -90 * 3.1415926535 / 180,
+                            child: const Icon(Icons.tune_rounded),
+                          ),
+                          title: "Année",
+                          value: widget.vehicle.year?.toString() ?? "N/A",
+                          textStyle: textStyle,
+                        ),
+                        const SizedBox(width: 12),
+                        _infoCard(
+                          icon: const Icon(Icons.speed),
+                          title: "Kilométrage",
+                          value: widget.vehicle.mileage != null
+                              ? "${NumberFormat('#,###').format(widget.vehicle.mileage).replaceAll(',', '.')}Km"
+                              : "N/A",
+                          textStyle: textStyle,
+                        ),
+                        const SizedBox(width: 12),
+                        _infoCard(
+                          icon: const Icon(Icons.calendar_month_rounded),
+                          title: "Contrôle",
+                          value: widget.vehicle.technicalControlDate != null
+                              ? DateFormat('dd/MM/yyyy').format(widget.vehicle.technicalControlDate!)
+                              : "N/A",
+                          textStyle: textStyle,
+                        ),
+                        const SizedBox(width: 12),
+                        _infoCard(
+                          icon: const Icon(Icons.local_gas_station),
+                          title: "Type moteur",
+                          value: widget.vehicle.engineType ?? "N/A",
+                          textStyle: textStyle,
+                        ),
+                        const SizedBox(width: 12),
+                        _infoCard(
+                          icon: const Icon(Icons.settings),
+                          title: "Cylindrée",
+                          value: widget.vehicle.displacement ?? "N/A",
+                          textStyle: textStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
 
-            // Cartes info en scroll horizontal
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-              child: Row(
-                children: [
-                  _infoCard(
-                    icon: Transform.rotate(
-                      angle: -90 * 3.1415926535 / 180,
-                      child: const Icon(Icons.tune_rounded),
-                    ),
-                    title: "Année",
-                    value: widget.vehicle.year?.toString() ?? "N/A",
-                    textStyle: textStyle,
-                  ),
-                  const SizedBox(width: 12),
-                  _infoCard(
-                    icon: const Icon(Icons.speed),
-                    title: "Kilométrage",
-                    value: widget.vehicle.mileage != null
-                        ? "${NumberFormat('#,###').format(widget.vehicle.mileage).replaceAll(',', '.')}Km"
-                        : "N/A",
-                    textStyle: textStyle,
-                  ),
-                  const SizedBox(width: 12),
-                  _infoCard(
-                    icon: const Icon(Icons.calendar_month_rounded),
-                    title: "Contrôle",
-                    value: widget.vehicle.technicalControlDate != null
-                        ? DateFormat('dd/MM/yyyy').format(widget.vehicle.technicalControlDate!)
-                        : "N/A",
-                    textStyle: textStyle,
-                  ),
-                  const SizedBox(width: 12),
-                  _infoCard(
-                    icon: const Icon(Icons.local_gas_station),
-                    title: "Type moteur",
-                    value: widget.vehicle.engineType ?? "N/A",
-                    textStyle: textStyle,
-                  ),
-                  const SizedBox(width: 12),
-                  _infoCard(
-                    icon: const Icon(Icons.settings),
-                    title: "Cylindrée",
-                    value: widget.vehicle.displacement ?? "N/A",
-                    textStyle: textStyle,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
+            // Espace pour les cards qui dépassent du header
+            SizedBox(height: ResponsiveHelper.isSmallHeight(context) ? 61 : 66),
 
             Padding(
               padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width < 400 ? 16 : 24),
