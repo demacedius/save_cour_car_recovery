@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:save_your_car/theme/figma_color.dart';
 import 'package:save_your_car/models/vehicles.dart';
-import 'package:save_your_car/services/premium_service.dart';
 
 class MainScaffold extends StatefulWidget {
   final Widget child;
@@ -60,15 +59,6 @@ class _MainScaffoldState extends State<MainScaffold> {
   }
 
   Future<void> _handleScannerAccess() async {
-    // Vérifier d'abord l'accès premium
-    final hasAccess = await PremiumService.checkDocumentScannerAccess(context);
-    
-    if (!hasAccess) {
-      // L'utilisateur n'a pas d'abonnement, le paywall a été affiché
-      return;
-    }
-
-    // L'utilisateur a un abonnement, vérifier si un véhicule est sélectionné
     if (widget.selectedVehicle != null) {
       // Lancer le scanner avec l'objet véhicule complet
       Navigator.pushNamed(

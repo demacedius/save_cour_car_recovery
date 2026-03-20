@@ -24,7 +24,18 @@ class _AppState extends State<App> {
     _initDeepLinks();
   }
 
-  void _initDeepLinks() {
+  void _initDeepLinks() async {
+    // Cold start: app launched from deep link
+    try {
+      final initialLink = await _appLinks.getInitialLink();
+      if (initialLink != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _handleDeepLink(initialLink);
+        });
+      }
+    } catch (_) {}
+
+    // App already running: deep link received
     _appLinks.uriLinkStream.listen((uri) {
       _handleDeepLink(uri);
     });

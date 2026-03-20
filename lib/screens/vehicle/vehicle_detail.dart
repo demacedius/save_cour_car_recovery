@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_print, sized_box_for_whitespace, use_build_context_synchronously, deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:save_your_car/models/document.dart';
 import 'package:save_your_car/models/vehicles.dart';
@@ -257,6 +256,125 @@ class _VehicleDetailState extends State<VehicleDetail> {
     }
   }
 
+  Future<void> _showEditDialog(BuildContext context) async {
+    final yearController = TextEditingController(text: widget.vehicle.year?.toString() ?? '');
+    final mileageController = TextEditingController(text: widget.vehicle.mileage?.toString() ?? '');
+    final engineTypeController = TextEditingController(text: widget.vehicle.engineType ?? '');
+    final displacementController = TextEditingController(text: widget.vehicle.displacement ?? '');
+
+    DateTime? selectedDate = widget.vehicle.technicalControlDate;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Modifier les informations'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: yearController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Année',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: mileageController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Kilométrage',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: engineTypeController,
+                decoration: const InputDecoration(
+                  labelText: 'Type de moteur (Essence, Diesel, Électrique, Hybride)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: displacementController,
+                decoration: const InputDecoration(
+                  labelText: 'Cylindrée (ex: 1.6L, 2.0L)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                title: Text(
+                  selectedDate != null
+                      ? 'Contrôle technique: ${DateFormat('dd/MM/yyyy').format(selectedDate!)}'
+                      : 'Date du contrôle technique',
+                ),
+                trailing: const Icon(Icons.calendar_today),
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: dialogContext,
+                    initialDate: selectedDate ?? DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2030),
+                  );
+                  if (picked != null) {
+                    selectedDate = picked;
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              // Mettre à jour le véhicule
+              final updatedVehicle = widget.vehicle.copyWith(
+                year: int.tryParse(yearController.text),
+                mileage: int.tryParse(mileageController.text),
+                engineType: engineTypeController.text.trim().isEmpty ? null : engineTypeController.text.trim(),
+                displacement: displacementController.text.trim().isEmpty ? null : displacementController.text.trim(),
+                technicalControlDate: selectedDate,
+              );
+
+              // Appeler l'API pour mettre à jour
+              final token = await AuthService.getToken();
+              if (token != null && widget.vehicle.id != null) {
+                final success = await updateVehicle(updatedVehicle, token);
+                if (success && mounted) {
+                  Navigator.pop(dialogContext);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('✅ Véhicule mis à jour !'), backgroundColor: Colors.green),
+                  );
+                  // Recharger la page
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => VehicleDetail(vehicle: updatedVehicle)),
+                  );
+                } else {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('❌ Erreur lors de la mise à jour'), backgroundColor: Colors.red),
+                    );
+                  }
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: FigmaColors.primaryMain),
+            child: const Text('Enregistrer', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final textStyle = FigmaTextStyles();
@@ -304,26 +422,49 @@ class _VehicleDetailState extends State<VehicleDetail> {
                               width: ResponsiveHelper.brandLogoSize(context).width,
                               height: ResponsiveHelper.brandLogoSize(context).height,
                               fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  SvgPicture.asset(
-                                "assets/images/Audi svg.svg",
-                                width: ResponsiveHelper.brandLogoSize(context).width,
-                                height: ResponsiveHelper.brandLogoSize(context).height,
-                                fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) => Icon(
+                                Icons.directions_car,
+                                size: ResponsiveHelper.brandLogoSize(context).height,
+                                color: FigmaColors.neutral60,
                               ),
                             )
-                          : SvgPicture.asset(
-                              "assets/images/Audi svg.svg",
-                              width: ResponsiveHelper.brandLogoSize(context).width,
-                              height: ResponsiveHelper.brandLogoSize(context).height,
-                              fit: BoxFit.contain,
+                          : Icon(
+                              Icons.directions_car,
+                              size: ResponsiveHelper.brandLogoSize(context).height,
+                              color: FigmaColors.neutral60,
                             ),
                       const SizedBox(height: 8),
-                      Text(
-                        "${widget.vehicle.brand} ${widget.vehicle.model}",
-                        style: textStyle.headingSBold.copyWith(
-                          color: FigmaColors.neutral100,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              "${widget.vehicle.brand} ${widget.vehicle.model}",
+                              style: textStyle.headingSBold.copyWith(
+                                color: FigmaColors.neutral100,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () => _showEditDialog(context),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: FigmaColors.primaryMain.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                size: 18,
+                                color: FigmaColors.primaryMain,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 8),
                       widget.vehicle.imageUrl != null
@@ -459,51 +600,80 @@ class _VehicleDetailState extends State<VehicleDetail> {
                     ),
                   ),
 
-                // ← bloc des 3 cartes info - constrained for small screens
+                // Bloc des 2 rangées de cartes info
                 Positioned(
-                  bottom: MediaQuery.of(context).size.height < 700 ? -42 : (ResponsiveHelper.isMobile(context) ? -48 : -54),
+                  bottom: MediaQuery.of(context).size.height < 700 ? -96 : -108,
                   left: 0,
                   right: 0,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _infoCard(
-                          icon: Transform.rotate(
-                            angle: -90 * 3.1415926535 / 180,
-                            child: const Icon(Icons.tune_rounded),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Center(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _infoCard(
+                                icon: Transform.rotate(
+                                  angle: -90 * 3.1415926535 / 180,
+                                  child: const Icon(Icons.tune_rounded),
+                                ),
+                                title: "Année",
+                                value: widget.vehicle.year?.toString() ?? "N/A",
+                                textStyle: textStyle,
+                              ),
+                              SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20)),
+                              _infoCard(
+                                icon: const Icon(Icons.speed),
+                                title: "Kilométrage",
+                                value: widget.vehicle.mileage != null
+                                    ? "${NumberFormat('#,###').format(widget.vehicle.mileage).replaceAll(',', '.')}Km"
+                                    : "N/A",
+                                textStyle: textStyle,
+                              ),
+                              SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20)),
+                              _infoCard(
+                                icon: const Icon(Icons.calendar_month_rounded),
+                                title: "Contrôle",
+                                value: widget.vehicle.technicalControlDate != null
+                                    ? DateFormat('dd/MM/yyyy').format(widget.vehicle.technicalControlDate!)
+                                    : "N/A",
+                                textStyle: textStyle,
+                              ),
+                            ],
                           ),
-                          title: "Année",
-                          value: widget.vehicle.year?.toString() ?? "N/A",
-                          textStyle: textStyle,
                         ),
-                        SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 6, tablet: 12, desktop: 12)),
-                        _infoCard(
-                          icon: const Icon(Icons.speed),
-                          title: "Kilométrage",
-                          value: widget.vehicle.mileage != null 
-                              ? "${NumberFormat('#,###').format(widget.vehicle.mileage).replaceAll(',', '.')}Km"
-                              : "N/A",
-                          textStyle: textStyle,
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _infoCard(
+                              icon: const Icon(Icons.local_gas_station),
+                              title: "Type moteur",
+                              value: widget.vehicle.engineType ?? "N/A",
+                              textStyle: textStyle,
+                            ),
+                            SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20)),
+                            _infoCard(
+                              icon: const Icon(Icons.settings),
+                              title: "Cylindrée",
+                              value: widget.vehicle.displacement ?? "N/A",
+                              textStyle: textStyle,
+                            ),
+                          ],
                         ),
-                        SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 6, tablet: 12, desktop: 12)),
-                        _infoCard(
-                          icon: const Icon(Icons.calendar_month_rounded),
-                          title: "Contrôle",
-                          value: widget.vehicle.technicalControlDate != null
-                              ? DateFormat('dd/MM/yyyy').format(widget.vehicle.technicalControlDate!)
-                              : "N/A",
-                          textStyle: textStyle,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
 
-            SizedBox(height: MediaQuery.of(context).size.height < 700 ? 52 : (ResponsiveHelper.isMobile(context) ? 58 : 64)), // pour ne pas cacher les cards
+            SizedBox(height: MediaQuery.of(context).size.height < 700 ? 112 : 124), // Espace pour les 2 rangées de cards
 
             Padding(
               padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width < 400 ? 16 : 24),
