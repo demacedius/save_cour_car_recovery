@@ -154,5 +154,24 @@ func createTables() {
 		log.Printf("Info: Colonnes profil utilisateur déjà existantes ou erreur: %v", err)
 	}
 
+	// Table des tokens de réinitialisation de mot de passe
+	passwordResetTable := `
+	CREATE TABLE IF NOT EXISTS password_reset_tokens (
+		id SERIAL PRIMARY KEY,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		token VARCHAR(255) NOT NULL UNIQUE,
+		expires_at TIMESTAMP NOT NULL,
+		used BOOLEAN DEFAULT FALSE,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	)`
+
+	if _, err := DB.Exec(passwordResetTable); err != nil {
+		log.Fatal("Erreur création table password_reset_tokens:", err)
+	}
+
+	if _, err := DB.Exec(`CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token)`); err != nil {
+		log.Printf("Info: Index token déjà existant: %v", err)
+	}
+
 	log.Println("Tables créées avec succès")
 }

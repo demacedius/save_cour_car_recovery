@@ -5,6 +5,7 @@ import 'package:save_your_car/screens/auth/login_screen.dart';
 import 'package:save_your_car/screens/auth/sign_up_screen.dart';
 import 'package:save_your_car/screens/auth/welcome_screen.dart';
 import 'package:save_your_car/screens/auth/forgot_password_screen.dart';
+import 'package:save_your_car/screens/auth/reset_password_screen.dart';
 import 'package:save_your_car/screens/cameraDocumentScreen.dart';
 import 'package:save_your_car/screens/home/home_screen.dart';
 import 'package:save_your_car/screens/profil.dart';
@@ -19,6 +20,10 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/welcome': (context) => const WelcomeScreen(),
   '/login': (context) => const LoginScreen(),
   '/forgot_password': (context) => const ForgotPasswordScreen(),
+  '/reset_password': (context) {
+    final token = ModalRoute.of(context)?.settings.arguments as String? ?? '';
+    return ResetPasswordScreen(token: token);
+  },
   '/sign_up': (context) =>  SignUpScreen(vehicle: null,),
   
   '/matricule': (context) => MatriculeScreen(),

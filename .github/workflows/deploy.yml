@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - main
     paths:
       - 'backend-go/**' # Se déclenche uniquement si le code du backend change
 
@@ -42,4 +43,5 @@ jobs:
               -p 3334:3334 \
               --restart always \
               --env-file ~/save_cour_car_recovery/.env \
+              -e RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} \
               ${{ secrets.DOCKERHUB_USERNAME }}/save_cour_car_recovery:latest

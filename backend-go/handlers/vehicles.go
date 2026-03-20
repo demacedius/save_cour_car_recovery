@@ -4,6 +4,7 @@ import (
 	"backend-go/database"
 	"backend-go/models"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -27,8 +28,8 @@ func CreateVehicle(c *gin.Context) {
 
 	var vehicleID int
 	err := database.DB.QueryRow(
-		"INSERT INTO vehicles (user_id, plate, model, brand, year, mileage, technical_control_date, image_url, brand_image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id",
-		userID, req.Plate, req.Model, req.Brand, req.Year, req.Mileage, req.TechnicalControlDate, req.ImageURL, req.BrandImageURL,
+		"INSERT INTO vehicles (user_id, plate, model, brand, year, mileage, technical_control_date, image_url, brand_image_url, engine_type, displacement) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id",
+		userID, req.Plate, req.Model, req.Brand, req.Year, req.Mileage, req.TechnicalControlDate, req.ImageURL, req.BrandImageURL, req.EngineType, req.Displacement,
 	).Scan(&vehicleID)
 
 	if err != nil {
@@ -50,7 +51,7 @@ func GetUserVehicles(c *gin.Context) {
 	}
 
 	rows, err := database.DB.Query(
-		"SELECT id, plate, model, brand, year, mileage, technical_control_date, image_url, brand_image_url, created_at, updated_at FROM vehicles WHERE user_id = $1",
+		"SELECT id, plate, model, brand, year, mileage, technical_control_date, image_url, brand_image_url, engine_type, displacement, created_at, updated_at FROM vehicles WHERE user_id = $1",
 		userID,
 	)
 	if err != nil {
@@ -62,7 +63,7 @@ func GetUserVehicles(c *gin.Context) {
 	var vehicles []models.Vehicle
 	for rows.Next() {
 		var v models.Vehicle
-		err := rows.Scan(&v.ID, &v.Plate, &v.Model, &v.Brand, &v.Year, &v.Mileage, &v.TechnicalControlDate, &v.ImageURL, &v.BrandImageURL, &v.CreatedAt, &v.UpdatedAt)
+		err := rows.Scan(&v.ID, &v.Plate, &v.Model, &v.Brand, &v.Year, &v.Mileage, &v.TechnicalControlDate, &v.ImageURL, &v.BrandImageURL, &v.EngineType, &v.Displacement, &v.CreatedAt, &v.UpdatedAt)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": "Erreur lecture véhicules"})
 			return
@@ -128,8 +129,8 @@ func GetVehicleFromPlate(c *gin.Context) {
 	}
 
 	// Log pour voir la structure exacte des données SIV (optionnel)
-	// fmt.Printf("🔍 Réponse brute de l'API SIV: %s\n", string(body))
-	// fmt.Printf("🔍 Données parsées: %+v\n", sivData)
+	fmt.Printf("🔍 Réponse brute de l'API SIV: %s\n", string(body))
+	fmt.Printf("🔍 Données parsées: %+v\n", sivData)
 
 	// Extraire les données du champ "data"
 	dataField, ok := sivData["data"].(map[string]interface{})
@@ -181,8 +182,8 @@ func UpdateVehicle(c *gin.Context) {
 	}
 
 	_, err = database.DB.Exec(
-		"UPDATE vehicles SET plate = $1, model = $2, brand = $3, year = $4, mileage = $5, technical_control_date = $6, image_url = $7, brand_image_url = $8, updated_at = CURRENT_TIMESTAMP WHERE id = $9",
-		req.Plate, req.Model, req.Brand, req.Year, req.Mileage, req.TechnicalControlDate, req.ImageURL, req.BrandImageURL, vehicleID,
+		"UPDATE vehicles SET plate = $1, model = $2, brand = $3, year = $4, mileage = $5, technical_control_date = $6, image_url = $7, brand_image_url = $8, engine_type = $9, displacement = $10, updated_at = CURRENT_TIMESTAMP WHERE id = $11",
+		req.Plate, req.Model, req.Brand, req.Year, req.Mileage, req.TechnicalControlDate, req.ImageURL, req.BrandImageURL, req.EngineType, req.Displacement, vehicleID,
 	)
 
 	if err != nil {

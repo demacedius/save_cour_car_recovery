@@ -3,6 +3,7 @@ package handlers
 import (
 	"backend-go/database"
 	"backend-go/models"
+	"backend-go/utils"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -212,8 +213,8 @@ func RegisterWithVehicle(c *gin.Context) {
 	}
 	
 	_, err = tx.Exec(
-		"INSERT INTO vehicles (user_id, plate, model, brand, year, mileage, technical_control_date, image_url, brand_image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
-		userID, req.Plate, req.Model, req.Brand, req.Year, req.Mileage, technicalControlDate, req.ImageURL, req.BrandImageURL,
+		"INSERT INTO vehicles (user_id, plate, model, brand, year, mileage, technical_control_date, image_url, brand_image_url, engine_type, displacement) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+		userID, req.Plate, req.Model, req.Brand, req.Year, req.Mileage, technicalControlDate, req.ImageURL, req.BrandImageURL, req.EngineType, req.Displacement,
 	)
 
 	if err != nil {
@@ -290,16 +291,20 @@ func ForgotPassword(c *gin.Context) {
 		return
 	}
 
-	// TODO: Envoyer l'email avec le lien de réinitialisation
-	// Pour l'instant, on retourne le token (à ne pas faire en production)
-	resetLink := fmt.Sprintf("http://yourapp.com/reset-password?token=%s", resetToken)
-	
-	// En développement, log le lien
-	fmt.Printf("🔗 Lien de réinitialisation pour %s: %s\n", email, resetLink)
+	// Construire le lien de réinitialisation (deep link iOS)
+	resetLink := fmt.Sprintf("saveyourcar://reset-password?token=%s", resetToken)
+
+	// Envoyer l'email via Resend
+	if err := utils.SendPasswordResetEmail(email, resetLink); err != nil {
+		fmt.Printf("❌ Erreur envoi email reset pour %s: %v\n", email, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Erreur envoi email"})
+		return
+	}
+
+	fmt.Printf("✅ Email de réinitialisation envoyé à %s\n", email)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Si cet email existe, un lien de réinitialisation a été envoyé.",
-		"resetLink": resetLink, // Temporaire pour les tests
 	})
 }
 

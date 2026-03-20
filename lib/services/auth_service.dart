@@ -448,6 +448,30 @@ class AuthService {
     }
   }
 
+  // Réinitialisation du mot de passe avec token
+  static Future<Map<String, dynamic>> resetPassword(String token, String newPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/reset-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'token': token, 'newPassword': newPassword}),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': responseData['message']};
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Erreur lors de la réinitialisation',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Erreur de réseau'};
+    }
+  }
+
   // Utilitaire: Crée les headers d'authentification
   static Future<Map<String, String>?> getAuthHeaders() async {
     final token = await getToken();

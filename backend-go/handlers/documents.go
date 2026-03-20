@@ -21,15 +21,27 @@ func UploadDocument(c *gin.Context) {
 		return
 	}
 
-	var req models.DocumentRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Données invalides", "error": err.Error()})
+	// Récupérer les champs du formulaire multipart
+	vehicleIDStr := c.PostForm("vehicle_id")
+	name := c.PostForm("name")
+	docType := c.PostForm("type")
+	description := c.PostForm("description")
+
+	// Validation
+	if vehicleIDStr == "" || name == "" || docType == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "vehicle_id, name et type sont obligatoires"})
+		return
+	}
+
+	vehicleID, err := strconv.Atoi(vehicleIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "vehicle_id invalide"})
 		return
 	}
 
 	// Vérifier que le véhicule appartient à l'utilisateur
 	var vehicleExists bool
-	err := database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM vehicles WHERE id = $1 AND user_id = $2)", req.VehicleID, userID).Scan(&vehicleExists)
+	err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM vehicles WHERE id = $1 AND user_id = $2)", vehicleID, userID).Scan(&vehicleExists)
 	if err != nil || !vehicleExists {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Véhicule non trouvé"})
 		return
@@ -75,8 +87,8 @@ func UploadDocument(c *gin.Context) {
 		INSERT INTO documents (vehicle_id, user_id, name, type, description, file_path, file_name, file_size, mime_type, created_at, updated_at) 
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
 		RETURNING id`,
-		req.VehicleID, userID.(int), req.Name, req.Type, req.Description, 
-		filePath, header.Filename, fileSize, header.Header.Get("Content-Type"), 
+		vehicleID, userID.(int), name, docType, description,
+		filePath, header.Filename, fileSize, header.Header.Get("Content-Type"),
 		time.Now(), time.Now(),
 	).Scan(&documentID)
 
@@ -90,10 +102,10 @@ func UploadDocument(c *gin.Context) {
 	// Retourner la réponse
 	response := models.DocumentResponse{
 		ID:          documentID,
-		VehicleID:   req.VehicleID,
-		Name:        req.Name,
-		Type:        req.Type,
-		Description: req.Description,
+		VehicleID:   vehicleID,
+		Name:        name,
+		Type:        docType,
+		Description: &description,
 		FileName:    header.Filename,
 		FileSize:    fileSize,
 		DownloadURL: fmt.Sprintf("/documents/%d/download", documentID),
