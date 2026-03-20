@@ -15,6 +15,8 @@ type Vehicle struct {
 	TechnicalControlDate *time.Time `json:"technicalControlDate"`
 	ImageURL             *string    `json:"imageUrl"`
 	BrandImageURL        *string    `json:"brandImageUrl"`
+	EngineType           *string    `json:"engine_type" gorm:"column:engine_type"`
+	Displacement         *string    `json:"displacement" gorm:"column:displacement"`
 	CreatedAt            time.Time  `json:"created_at"`
 	UpdatedAt            time.Time  `json:"updated_at"`
 }
@@ -28,6 +30,8 @@ type VehicleRequest struct {
 	TechnicalControlDate *time.Time `json:"technical_control_date"`
 	ImageURL             *string    `json:"image_url"`
 	BrandImageURL        *string    `json:"brand_image_url"`
+	EngineType           *string    `json:"engine_type"`
+	Displacement         *string    `json:"displacement"`
 }
 
 type RegisterWithVehicleRequest struct {
@@ -42,6 +46,8 @@ type RegisterWithVehicleRequest struct {
 	TechnicalControlDate *string `json:"technicalControlDate"`
 	ImageURL             *string `json:"imageUrl"`
 	BrandImageURL        *string `json:"brandImageUrl"`
+	EngineType           *string `json:"engineType"`
+	Displacement         *string `json:"displacement"`
 }
 
 type VehicleResponse struct {
@@ -54,6 +60,8 @@ type VehicleResponse struct {
 	TechnicalControlDate *time.Time `json:"technicalControlDate"`
 	ImageURL             *string    `json:"imageUrl"`
 	BrandImageURL        *string    `json:"brandImageUrl"`
+	EngineType           *string    `json:"engine_type"`
+	Displacement         *string    `json:"displacement"`
 }
 
 type TransferVehicleRequest struct {
