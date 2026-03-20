@@ -413,9 +413,7 @@ class _VehicleDetailState extends State<VehicleDetail> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(
-                        height: 24,
-                      ), 
+                      SizedBox(height: MediaQuery.of(context).padding.top + 8),
                       widget.vehicle.brandImageUrl != null
                           ? Image.network(
                               widget.vehicle.brandImageUrl!,
@@ -492,164 +490,104 @@ class _VehicleDetailState extends State<VehicleDetail> {
                   ),
                 ),
 
-                // ← bouton retour - responsive positioning
+                // Bouton retour
                 Positioned(
-                  top: MediaQuery.of(context).size.height < 700 ? 48 : 68,
-                  left: MediaQuery.of(context).size.width < 400 ? 16 : 24,
+                  top: MediaQuery.of(context).padding.top + 12,
+                  left: 16,
                   child: GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
                         color: FigmaColors.neutral50,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.chevron_left,
-                        size: 20,
-                        color: FigmaColors.neutral00,
-                      ),
+                      child: const Icon(Icons.chevron_left, size: 20, color: FigmaColors.neutral00),
                     ),
                   ),
                 ),
 
-                // Bouton refresh (pour debug) - responsive positioning
+                // Boutons droite groupés
                 Positioned(
-                  top: MediaQuery.of(context).size.height < 700 ? 48 : 68,
-                  right: isUserLoggedIn ? (MediaQuery.of(context).size.width < 400 ? 96 : 116) : (MediaQuery.of(context).size.width < 400 ? 56 : 70),
-                  child: GestureDetector(
-                    onTap: () {
-                      _checkUserToken();
-                      _loadDocuments();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: FigmaColors.neutral70,
-                        shape: BoxShape.circle,
+                  top: MediaQuery.of(context).padding.top + 12,
+                  right: 16,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Refresh
+                      GestureDetector(
+                        onTap: () { _checkUserToken(); _loadDocuments(); },
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(color: FigmaColors.neutral70, shape: BoxShape.circle),
+                          child: const Icon(Icons.refresh, size: 18, color: FigmaColors.neutral00),
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.refresh,
-                        size: 20,
-                        color: FigmaColors.neutral00,
-                      ),
-                    ),
+                      if (isUserLoggedIn) ...[
+                        const SizedBox(width: 8),
+                        // Transfert
+                        GestureDetector(
+                          onTap: () => _showTransferDialog(context),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: const BoxDecoration(color: FigmaColors.primaryMain, shape: BoxShape.circle),
+                            child: const Icon(Icons.transfer_within_a_station, size: 18, color: FigmaColors.neutral00),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-
-                // Bouton déconnexion (pour debug) - responsive positioning
-                if (isUserLoggedIn)
-                  Positioned(
-                    top: MediaQuery.of(context).size.height < 700 ? 48 : 68,
-                    right: MediaQuery.of(context).size.width < 400 ? 56 : 70,
-                    child: GestureDetector(
-                      onTap: () async {
-                        await AuthService.logout();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Déconnecté avec succès'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                        setState(() {
-                          isUserLoggedIn = false;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.logout,
-                          size: 20,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                // Bouton de transfert (seulement si connecté) - responsive positioning
-                if (isUserLoggedIn)
-                  Positioned(
-                    top: MediaQuery.of(context).size.height < 700 ? 48 : 68,
-                    right: MediaQuery.of(context).size.width < 400 ? 16 : 24,
-                    child: GestureDetector(
-                      onTap: () => _showTransferDialog(context),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: FigmaColors.primaryMain,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.transfer_within_a_station,
-                          size: 20,
-                          color: FigmaColors.neutral00,
-                        ),
-                      ),
-                    ),
-                  ),
 
               ],
             ),
 
-            // Cartes info directement sous le header
-            Padding(
+            // Cartes info en scroll horizontal
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-              child: Column(
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _infoCard(
-                        icon: Transform.rotate(
-                          angle: -90 * 3.1415926535 / 180,
-                          child: const Icon(Icons.tune_rounded),
-                        ),
-                        title: "Année",
-                        value: widget.vehicle.year?.toString() ?? "N/A",
-                        textStyle: textStyle,
-                      ),
-                      SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20)),
-                      _infoCard(
-                        icon: const Icon(Icons.speed),
-                        title: "Kilométrage",
-                        value: widget.vehicle.mileage != null
-                            ? "${NumberFormat('#,###').format(widget.vehicle.mileage).replaceAll(',', '.')}Km"
-                            : "N/A",
-                        textStyle: textStyle,
-                      ),
-                      SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20)),
-                      _infoCard(
-                        icon: const Icon(Icons.calendar_month_rounded),
-                        title: "Contrôle",
-                        value: widget.vehicle.technicalControlDate != null
-                            ? DateFormat('dd/MM/yyyy').format(widget.vehicle.technicalControlDate!)
-                            : "N/A",
-                        textStyle: textStyle,
-                      ),
-                    ],
+                  _infoCard(
+                    icon: Transform.rotate(
+                      angle: -90 * 3.1415926535 / 180,
+                      child: const Icon(Icons.tune_rounded),
+                    ),
+                    title: "Année",
+                    value: widget.vehicle.year?.toString() ?? "N/A",
+                    textStyle: textStyle,
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _infoCard(
-                        icon: const Icon(Icons.local_gas_station),
-                        title: "Type moteur",
-                        value: widget.vehicle.engineType ?? "N/A",
-                        textStyle: textStyle,
-                      ),
-                      SizedBox(width: ResponsiveHelper.responsiveSpacing(context, mobile: 12, tablet: 16, desktop: 20)),
-                      _infoCard(
-                        icon: const Icon(Icons.settings),
-                        title: "Cylindrée",
-                        value: widget.vehicle.displacement ?? "N/A",
-                        textStyle: textStyle,
-                      ),
-                    ],
+                  const SizedBox(width: 12),
+                  _infoCard(
+                    icon: const Icon(Icons.speed),
+                    title: "Kilométrage",
+                    value: widget.vehicle.mileage != null
+                        ? "${NumberFormat('#,###').format(widget.vehicle.mileage).replaceAll(',', '.')}Km"
+                        : "N/A",
+                    textStyle: textStyle,
+                  ),
+                  const SizedBox(width: 12),
+                  _infoCard(
+                    icon: const Icon(Icons.calendar_month_rounded),
+                    title: "Contrôle",
+                    value: widget.vehicle.technicalControlDate != null
+                        ? DateFormat('dd/MM/yyyy').format(widget.vehicle.technicalControlDate!)
+                        : "N/A",
+                    textStyle: textStyle,
+                  ),
+                  const SizedBox(width: 12),
+                  _infoCard(
+                    icon: const Icon(Icons.local_gas_station),
+                    title: "Type moteur",
+                    value: widget.vehicle.engineType ?? "N/A",
+                    textStyle: textStyle,
+                  ),
+                  const SizedBox(width: 12),
+                  _infoCard(
+                    icon: const Icon(Icons.settings),
+                    title: "Cylindrée",
+                    value: widget.vehicle.displacement ?? "N/A",
+                    textStyle: textStyle,
                   ),
                 ],
               ),
