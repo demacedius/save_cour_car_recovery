@@ -28,12 +28,12 @@ func main() {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
-		
+
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return
 		}
-		
+
 		c.Next()
 	})
 
@@ -44,6 +44,8 @@ func main() {
 	r.POST("/vehicles/from-plate", handlers.GetVehicleFromPlate)
 	r.POST("/forgot-password", handlers.ForgotPassword)
 	r.POST("/reset-password", handlers.ResetPassword)
+	r.GET("/reset-password", handlers.ResetPasswordPage)
+	r.POST("/stripe-webhook", handlers.HandleStripeWebhook)
 
 	// Routes protégées
 	protected := r.Group("/")
@@ -56,19 +58,20 @@ func main() {
 		protected.PUT("/vehicles/:id", handlers.UpdateVehicle)
 		protected.DELETE("/vehicles/:id", handlers.DeleteVehicle)
 		protected.POST("/vehicles/:id/transfer", handlers.TransferVehicle)
-		
+
 		// Routes documents
 		protected.POST("/documents", handlers.UploadDocument)
 		protected.GET("/vehicles/:vehicle_id/documents", handlers.GetVehicleDocuments)
 		protected.GET("/documents/:document_id/download", handlers.DownloadDocument)
 		protected.DELETE("/documents/:document_id", handlers.DeleteDocument)
-		
+
 		// Routes profil utilisateur
 		protected.GET("/api/user/profile", handlers.GetUserProfile)
 		protected.PUT("/api/user/profile", handlers.UpdateUserProfile)
 		protected.PUT("/api/user/password", handlers.UpdatePassword)
 		protected.POST("/api/user/profile-picture", handlers.UploadProfilePicture)
-		
+		protected.DELETE("/api/user/delete", handlers.DeleteUser)
+
 		// Routes rendez-vous
 		protected.POST("/appointments", handlers.CreateAppointment)
 		protected.GET("/appointments", handlers.GetUserAppointments)
@@ -76,11 +79,12 @@ func main() {
 		protected.PUT("/appointments/:id", handlers.UpdateAppointment)
 		protected.PUT("/appointments/:id/validate", handlers.ValidateAppointment)
 		protected.DELETE("/appointments/:id", handlers.DeleteAppointment)
-		
+
 		// Routes Stripe (abonnements)
 		protected.POST("/create-subscription", handlers.CreateSubscription)
 		protected.GET("/subscription-status", handlers.GetSubscriptionStatus)
 		protected.POST("/cancel-subscription", handlers.CancelSubscription)
+		protected.GET("/subscription-client-secret", handlers.GetSubscriptionClientSecret)
 	}
 
 	// Routes statiques pour les photos de profil
@@ -94,9 +98,11 @@ func main() {
 	// Démarrer le serveur
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3334"  // Utiliser 3334 pour correspondre au frontend
+		port = "3334"
 	}
 
 	log.Printf("Serveur démarré sur le port %s", port)
 	r.Run(":" + port)
+	//triger CI corrections 7
+
 }

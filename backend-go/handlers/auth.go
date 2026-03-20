@@ -291,8 +291,8 @@ func ForgotPassword(c *gin.Context) {
 		return
 	}
 
-	// Construire le lien de réinitialisation (deep link iOS)
-	resetLink := fmt.Sprintf("saveyourcar://reset-password?token=%s", resetToken)
+	// Construire le lien de réinitialisation (lien HTTPS qui redirige vers le deep link)
+	resetLink := fmt.Sprintf("https://saveyourcar.fr/reset-password?token=%s", resetToken)
 
 	// Envoyer l'email via Resend
 	if err := utils.SendPasswordResetEmail(email, resetLink); err != nil {
@@ -363,4 +363,47 @@ func ResetPassword(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Mot de passe réinitialisé avec succès"})
+}
+
+func ResetPasswordPage(c *gin.Context) {
+	token := c.Query("token")
+	if token == "" {
+		c.Data(http.StatusBadRequest, "text/html; charset=utf-8", []byte("<h1>Lien invalide</h1>"))
+		return
+	}
+
+	deepLink := fmt.Sprintf("saveyourcar://reset-password?token=%s", token)
+	html := fmt.Sprintf(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Réinitialisation - Save Your Car</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f5f5f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .card { background: white; border-radius: 20px; padding: 40px 32px; max-width: 400px; width: 100%%; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    .icon { font-size: 48px; margin-bottom: 16px; }
+    h1 { color: #6C63FF; font-size: 22px; margin-bottom: 12px; }
+    p { color: #666; font-size: 15px; line-height: 1.5; margin-bottom: 28px; }
+    .btn { display: block; background: #6C63FF; color: white; text-decoration: none; padding: 16px 24px; border-radius: 50px; font-size: 16px; font-weight: bold; margin-bottom: 12px; }
+  </style>
+  <script>
+    window.onload = function() {
+      window.location.href = "%s";
+    };
+  </script>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🔐</div>
+    <h1>Save Your Car</h1>
+    <p>Cliquez sur le bouton ci-dessous pour ouvrir l'application et réinitialiser votre mot de passe.</p>
+    <a class="btn" href="%s">Ouvrir l'application</a>
+    <p style="font-size: 13px; color: #999;">Si l'application ne s'ouvre pas, assurez-vous qu'elle est installée sur votre téléphone.</p>
+  </div>
+</body>
+</html>`, deepLink, deepLink)
+
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }
