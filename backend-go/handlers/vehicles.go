@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -139,14 +140,34 @@ func GetVehicleFromPlate(c *gin.Context) {
 		return
 	}
 
+	// Nettoyer le nom du modèle (supprimer les codes d'homologation entre parenthèses)
+	// ex: "CLIO III (BR0/1, CR0/1)" → "CLIO III"
+	modelStr := ""
+	if m, ok := dataField["AWN_modele"].(string); ok {
+		if idx := strings.Index(m, "("); idx != -1 {
+			modelStr = strings.TrimSpace(m[:idx])
+		} else {
+			modelStr = m
+		}
+	}
+
+	// Récupérer le logo de marque (AWN_url_image ou fallback sur AWN_brand_img_full_path)
+	brandImageUrl := dataField["AWN_url_image"]
+	if brandImageUrl == nil || brandImageUrl == "" {
+		brandImageUrl = dataField["AWN_brand_img_full_path"]
+	}
+	if brandImageUrl == nil || brandImageUrl == "" {
+		brandImageUrl = dataField["AWN_brand_img"]
+	}
+
 	// Retourner les données dans le format attendu par Flutter
 	vehicleData := gin.H{
 		"plate":                req.Plate,
 		"brand":                dataField["AWN_marque"],
-		"model":                dataField["AWN_modele"],
+		"model":                modelStr,
 		"year":                 dataField["AWN_annee_de_debut_modele"],
 		"imageUrl":             dataField["AWN_model_image"],
-		"brandImageUrl":        dataField["AWN_url_image"],
+		"brandImageUrl":        brandImageUrl,
 		"technicalControlDate": dataField["AWN_date_derniere_cg"],
 	}
 

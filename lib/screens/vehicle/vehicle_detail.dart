@@ -422,17 +422,9 @@ class _VehicleDetailState extends State<VehicleDetail> {
                               width: ResponsiveHelper.brandLogoSize(context).width,
                               height: ResponsiveHelper.brandLogoSize(context).height,
                               fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => Icon(
-                                Icons.directions_car,
-                                size: ResponsiveHelper.brandLogoSize(context).height,
-                                color: FigmaColors.neutral60,
-                              ),
+                              errorBuilder: (context, error, stackTrace) => _brandInitialAvatar(context),
                             )
-                          : Icon(
-                              Icons.directions_car,
-                              size: ResponsiveHelper.brandLogoSize(context).height,
-                              color: FigmaColors.neutral60,
-                            ),
+                          : _brandInitialAvatar(context),
                       const SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -714,6 +706,32 @@ class _VehicleDetailState extends State<VehicleDetail> {
                         ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _brandInitialAvatar(BuildContext context) {
+    final initial = widget.vehicle.brand.isNotEmpty
+        ? widget.vehicle.brand[0].toUpperCase()
+        : '?';
+    final size = ResponsiveHelper.brandLogoSize(context).height;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: FigmaColors.primaryFocus,
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          initial,
+          style: TextStyle(
+            fontSize: size * 0.55,
+            fontWeight: FontWeight.bold,
+            color: FigmaColors.primaryMain,
+            fontFamily: 'Poppins',
+          ),
         ),
       ),
     );

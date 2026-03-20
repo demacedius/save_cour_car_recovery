@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:save_your_car/models/vehicles.dart';
-import 'package:save_your_car/screens/auth/sign_up_screen.dart';
 import 'package:save_your_car/theme/figma_color.dart';
 import 'package:save_your_car/widgets/stepper_components.dart';
 import 'package:save_your_car/services/auth_service.dart';
@@ -55,13 +54,16 @@ class _TechnicalControlScreenState extends State<TechnicalControlScreen> {
       // Utilisateur connecté : enregistrer directement le véhicule
       await _saveVehicleForLoggedUser(updatedVehicle, token);
     } else {
-      // Utilisateur non connecté : aller vers l'inscription
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SignUpScreen(vehicle: updatedVehicle),
-        ),
-      );
+      // Session expirée : rediriger vers la connexion
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Session expirée. Veuillez vous reconnecter.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+      }
     }
   }
 
@@ -91,8 +93,14 @@ class _TechnicalControlScreenState extends State<TechnicalControlScreen> {
           ),
         );
 
-        // Retourner à la liste des véhicules avec un résultat positif
-        Navigator.of(context).popUntil((route) => route.settings.name == '/vehicles' || route.isFirst);
+        // Attendre que le snackbar soit visible
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // Retourner à la page d'origine (MyVehicles) en indiquant le succès
+        // Cela va pop TechnicalControl, Klm et Matricule avec le résultat true
+        if (mounted) {
+          Navigator.of(context).popUntil((route) => route.settings.name == '/vehicles' || route.isFirst);
+        }
       } else {
         throw Exception('Erreur lors de l\'enregistrement');
       }
