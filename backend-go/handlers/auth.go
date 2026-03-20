@@ -64,7 +64,7 @@ func Register(c *gin.Context) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": userID,
 		"email":   req.Email,
-		"exp":     time.Now().Add(time.Hour * 24 * 7).Unix(), // 7 jours
+		"exp":     time.Now().Add(time.Hour * 24 * 90).Unix(), // 90 jours
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
@@ -114,7 +114,7 @@ func Login(c *gin.Context) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.ID,
 		"email":   user.Email,
-		"exp":     time.Now().Add(time.Hour * 24 * 7).Unix(), // 7 jours
+		"exp":     time.Now().Add(time.Hour * 24 * 90).Unix(), // 90 jours
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
@@ -233,7 +233,7 @@ func RegisterWithVehicle(c *gin.Context) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": userID,
 		"email":   req.Email,
-		"exp":     time.Now().Add(time.Hour * 24 * 7).Unix(), // 7 jours
+		"exp":     time.Now().Add(time.Hour * 24 * 90).Unix(), // 90 jours
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
