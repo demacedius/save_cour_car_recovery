@@ -6,6 +6,7 @@ import 'package:save_your_car/widgets/title_section.dart';
 import 'package:save_your_car/screens/garage/garage_list_screen.dart';
 import 'package:save_your_car/screens/progress_screen.dart';
 import 'package:save_your_car/screens/conseils_screen.dart';
+import 'package:save_your_car/screens/demarches_screen.dart';
 
 class ShortcutGrid extends StatefulWidget {
   const ShortcutGrid({super.key});
@@ -23,7 +24,7 @@ class _ShortcutGridState extends State<ShortcutGrid> {
       {"text": "Trouver un garage proche de chez moi", "icon": Icons.garage_outlined},
       {"text": "Nos Conseils", "icon": Icons.lightbulb_outline},
       {"text": "Ma progression", "icon": Icons.trending_up_outlined},
-      {"text": "Pièces", "icon": Icons.build_outlined},
+      {"text": "Démarches", "icon": Icons.assignment_outlined},
     ];
 
     return Column(
@@ -44,7 +45,7 @@ class _ShortcutGridState extends State<ShortcutGrid> {
             final shortcut = shortcuts[index];
             final text = shortcut["text"] as String;
             final icon = shortcut["icon"] as IconData;
-            final bool isDisable = text == "Pièces";
+            final bool isDisable = false;
             
             return Opacity(
               opacity: isDisable ? 0.5 : 1,
@@ -124,6 +125,14 @@ class _ShortcutGridState extends State<ShortcutGrid> {
           context,
           MaterialPageRoute(
             builder: (context) => const ProgressScreen(),
+          ),
+        );
+        break;
+      case "Démarches":
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const DemarchesScreen(),
           ),
         );
         break;

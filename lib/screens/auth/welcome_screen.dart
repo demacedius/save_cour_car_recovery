@@ -23,7 +23,7 @@ class WelcomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Bienvenue Sur Save\nYour Car',
+                'Bienvenue sur Save\nYour Car',
                 textAlign: TextAlign.left,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,

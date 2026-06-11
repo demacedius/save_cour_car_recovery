@@ -159,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Connectez vous pour profiter d\'une expérience\npersonnalisé',
+                                'Connectez-vous pour profiter d\'une expérience\npersonnalisée',
                                 textAlign: TextAlign.center,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,

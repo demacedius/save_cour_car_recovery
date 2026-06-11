@@ -96,7 +96,7 @@ class _KlmScreenState extends State<KlmScreen> {
               ),
               const SizedBox(height: 40),
               Text(
-                'Renseignez Vos Informations Concernant Le Véhicule',
+                'Renseignez vos informations sur le véhicule',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.black,

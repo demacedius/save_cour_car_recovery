@@ -14,6 +14,7 @@ import 'package:save_your_car/screens/vehicle/matricule_screen.dart';
 import 'package:save_your_car/screens/vehicles/my_vehicles.dart';
 
 import '../screens/splash/splash_screen.dart';
+import '../screens/demarches_screen.dart';
 
 final Map<String, WidgetBuilder> appRoutes = {
   '/': (context) => const SplashScreen(),
@@ -70,4 +71,5 @@ final Map<String, WidgetBuilder> appRoutes = {
   },
   '/calendar':(context) => const AppointmentScreen(), 
   '/profile': (context) => const ProfileScreen(),
+  '/demarches': (context) => const DemarchesScreen(),
 };

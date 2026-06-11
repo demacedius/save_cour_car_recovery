@@ -39,7 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: double.infinity,
                 height: 147,
                 child: Text(
-                  "Profile",
+                  "Profil",
                   style: textStyle.headingMBold.copyWith(
                     color: FigmaColors.neutral00,
                   ),
