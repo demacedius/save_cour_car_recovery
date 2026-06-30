@@ -34,13 +34,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
+
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -56,5 +50,13 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Utilisé pour scanner vos documents de véhicule et prendre des photos.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Utilisé pour localiser les garages proches de votre position.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Utilisé pour localiser les garages proches de votre position.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Utilisé pour ajouter des photos à vos documents de véhicule.</string>
 </dict>
 </plist>
