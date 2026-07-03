@@ -6,6 +6,7 @@ import 'package:save_your_car/services/openstreetmap_service.dart';
 import 'package:save_your_car/theme/figma_color.dart';
 import 'package:save_your_car/theme/figma_text_style.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GarageListScreen extends StatefulWidget {
   const GarageListScreen({super.key});
@@ -19,6 +20,101 @@ class _GarageListScreenState extends State<GarageListScreen> {
   List<Map<String, dynamic>> garages = [];
   String? errorMessage;
   Position? userPosition;
+  Map<String, double> _ratings = {};
+
+  String _ratingKey(String name) => 'garage_rating_$name';
+
+  Future<void> _loadRatings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final map = <String, double>{};
+    for (final g in garages) {
+      final key = _ratingKey(g['name'] as String);
+      final v = prefs.getDouble(key);
+      if (v != null) map[g['name'] as String] = v;
+    }
+    if (mounted) setState(() => _ratings = map);
+  }
+
+  Future<void> _saveRating(String garageName, double rating) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_ratingKey(garageName), rating);
+    if (mounted) setState(() => _ratings[garageName] = rating);
+  }
+
+  void _showRatingSheet(String garageName) {
+    double current = _ratings[garageName] ?? 0;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 20),
+              Text('Noter ce garage', style: FigmaTextStyles().textXLBold),
+              const SizedBox(height: 8),
+              Text(garageName, style: FigmaTextStyles().textMRegular.copyWith(color: FigmaColors.neutral70), textAlign: TextAlign.center),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (i) {
+                  final star = i + 1.0;
+                  return GestureDetector(
+                    onTap: () => setSheetState(() => current = star),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Icon(
+                        current >= star ? Icons.star_rounded : Icons.star_outline_rounded,
+                        color: current >= star ? const Color(0xFFF59E0B) : Colors.grey.shade300,
+                        size: 44,
+                      ),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                current == 0 ? 'Appuyez sur une étoile' : _ratingLabel(current),
+                style: FigmaTextStyles().textMRegular.copyWith(color: FigmaColors.neutral70),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FigmaColors.primaryMain,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: current == 0 ? null : () {
+                    _saveRating(garageName, current);
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Enregistrer la note'),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _ratingLabel(double r) {
+    if (r <= 1) return 'Très mauvais';
+    if (r <= 2) return 'Mauvais';
+    if (r <= 3) return 'Correct';
+    if (r <= 4) return 'Bien';
+    return 'Excellent';
+  }
 
   @override
   void initState() {
@@ -86,8 +182,9 @@ class _GarageListScreenState extends State<GarageListScreen> {
           garages = nearbyGarages;
           isLoading = false;
         });
+        _loadRatings();
       }
-      
+
       print('✅ ${garages.length} garages trouvés et triés par distance');
       
     } catch (e) {
@@ -334,8 +431,13 @@ class _GarageListScreenState extends State<GarageListScreen> {
           ),
           
           const SizedBox(height: 8),
-          
-          // Distance et téléphone
+
+          // Étoiles de notation
+          _buildStarRow(garage['name'] as String),
+
+          const SizedBox(height: 8),
+
+          // Distance et actions
           Row(
             children: [
               Container(
@@ -352,7 +454,6 @@ class _GarageListScreenState extends State<GarageListScreen> {
                 ),
               ),
               const Spacer(),
-              // Bouton téléphone
               Container(
                 decoration: BoxDecoration(
                   color: FigmaColors.neutral20,
@@ -368,7 +469,6 @@ class _GarageListScreenState extends State<GarageListScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              // Bouton itinéraire
               Container(
                 decoration: BoxDecoration(
                   color: FigmaColors.primaryMain,
@@ -384,6 +484,33 @@ class _GarageListScreenState extends State<GarageListScreen> {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStarRow(String garageName) {
+    final rating = _ratings[garageName] ?? 0;
+    return GestureDetector(
+      onTap: () => _showRatingSheet(garageName),
+      child: Row(
+        children: [
+          ...List.generate(5, (i) {
+            final star = i + 1.0;
+            return Icon(
+              rating >= star ? Icons.star_rounded : Icons.star_outline_rounded,
+              color: rating >= star ? const Color(0xFFF59E0B) : Colors.grey.shade300,
+              size: 18,
+            );
+          }),
+          const SizedBox(width: 6),
+          Text(
+            rating == 0 ? 'Donner une note' : _ratingLabel(rating),
+            style: FigmaTextStyles().captionSMedium.copyWith(
+              color: rating == 0 ? FigmaColors.neutral70 : const Color(0xFFF59E0B),
+              fontSize: 11,
+            ),
           ),
         ],
       ),
