@@ -35,6 +35,8 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            mkdir -p ~/save_cour_car_recovery
+            printf 'DB_HOST=${{ secrets.DB_HOST }}\nDB_PORT=${{ secrets.DB_PORT }}\nDB_USER=${{ secrets.DB_USER }}\nDB_PASSWORD=${{ secrets.DB_PASSWORD }}\nDB_NAME=${{ secrets.DB_NAME }}\nJWT_SECRET=${{ secrets.JWT_SECRET }}\nPORT=3334\nRAPIDAPI_KEY=${{ secrets.RAPIDAPI_KEY }}\nSTRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}\nSTRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}\nSMTP_USER=${{ secrets.SMTP_USER }}\nSMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}\n' > ~/save_cour_car_recovery/.env
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/save_cour_car_recovery:latest
             docker stop go-backend || true
             docker rm go-backend || true
@@ -43,6 +45,4 @@ jobs:
               -p 3334:3334 \
               --restart always \
               --env-file ~/save_cour_car_recovery/.env \
-              -e SMTP_USER=${{ secrets.SMTP_USER }} \
-              -e SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }} \
               ${{ secrets.DOCKERHUB_USERNAME }}/save_cour_car_recovery:latest
