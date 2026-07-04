@@ -14,6 +14,14 @@ import 'package:save_your_car/screens/vehicle/matricule_screen.dart';
 import 'package:save_your_car/screens/vehicles/my_vehicles.dart';
 
 import '../screens/splash/splash_screen.dart';
+import '../screens/demarches_screen.dart';
+import '../screens/document_screen.dart';
+
+class AppRouter {
+  static const String scanner = '/scanner';
+  static const String documents = '/documents';
+  static const String calendar = '/calendar';
+}
 
 final Map<String, WidgetBuilder> appRoutes = {
   '/': (context) => const SplashScreen(),
@@ -68,6 +76,14 @@ final Map<String, WidgetBuilder> appRoutes = {
     
     return SimpleDocumentScanner(vehicle: vehicle);
   },
-  '/calendar':(context) => const AppointmentScreen(), 
+  '/calendar': (context) => const AppointmentScreen(),
+  '/documents': (context) {
+    final vehicle = ModalRoute.of(context)?.settings.arguments as VehicleData?;
+    if (vehicle == null) {
+      return const Scaffold(body: Center(child: Text('Erreur: Véhicule non spécifié')));
+    }
+    return DocumentScreen(vehicle: vehicle);
+  },
   '/profile': (context) => const ProfileScreen(),
+  '/demarches': (context) => const DemarchesScreen(),
 };

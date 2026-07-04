@@ -605,7 +605,22 @@ class _VehicleDetailState extends State<VehicleDetail> {
 
             Padding(
               padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width < 400 ? 16 : 24),
-              child: Text("Documents du véhicule", style: textStyle.textXXLBold),
+              child: Row(
+                children: [
+                  Expanded(child: Text("Documents du véhicule", style: textStyle.textXXLBold)),
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      '/documents',
+                      arguments: widget.vehicle,
+                    ).then((_) => _loadDocuments()),
+                    child: Text(
+                      "Voir tous",
+                      style: textStyle.textMRegular.copyWith(color: const Color(0xFF3B82F6)),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
 

@@ -75,10 +75,7 @@ class _MyVehiclesState extends State<MyVehicles> {
                   left: 24,
                   right: 24,
                   bottom: -28,
-                  child: searchBar.SearchBar(
-                    onSearchChanged: (query) => setState(() => _searchQuery = query),
-                    onClear: () => setState(() => _searchQuery = ''),
-                  ),
+                  child: searchBar.SearchBar(),
                 ),
               ],
             ),

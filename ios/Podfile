@@ -39,5 +39,56 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # Enable module support for all Swift plugins
+    target.build_configurations.each do |config|
+      config.build_settings['DEFINES_MODULE'] = 'YES'
+      config.build_settings['SWIFT_VERSION'] = '5.0'
+      config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'NO'
+      # Strip extended attributes (resource forks) that block codesign on simulator
+      config.build_settings['OTHER_CODE_SIGN_FLAGS'] = '--deep'
+    end
+
+    # Add a pre-signing script phase to each pod target to strip xattrs
+    next if target.name == 'Pods-Runner'
+    phase = target.shell_script_build_phases.find { |p| p.name == 'Strip xattrs' }
+    unless phase
+      phase = target.new_shell_script_build_phase('Strip xattrs')
+      phase.shell_script = <<~SHELL
+        if [ -d "${TARGET_BUILD_DIR}/${WRAPPER_NAME}" ]; then
+          find "${TARGET_BUILD_DIR}/${WRAPPER_NAME}" -exec xattr -c {} + 2>/dev/null || true
+        fi
+        if [ -d "${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}" ]; then
+          find "${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}" -exec xattr -c {} + 2>/dev/null || true
+        fi
+      SHELL
+      phase.run_only_for_deployment_postprocessing = '0'
+    end
   end
+
+  # Fix awesome_notifications import issue only
+  registrant_file = File.join(File.dirname(__FILE__), 'Runner', 'GeneratedPluginRegistrant.m')
+  if File.exist?(registrant_file)
+    text = File.read(registrant_file)
+    new_text = text.dup
+
+    # Only comment out awesome_notifications @import and registration
+    new_text.gsub!(/@import awesome_notifications;/, '// @import awesome_notifications; // Commented - auto-registers')
+    new_text.gsub!(/\[AwesomeNotificationsPlugin registerWithRegistrar/, '// [AwesomeNotificationsPlugin registerWithRegistrar')
+
+    if text != new_text
+      File.write(registrant_file, new_text)
+      puts "✅ Fixed awesome_notifications in GeneratedPluginRegistrant.m"
+    end
+  end
+
+  # Fix BUILD_LIBRARY_FOR_DISTRIBUTION in all xcconfig files to prevent bridging header errors
+  Dir.glob('Pods/Target Support Files/**/*.xcconfig').each do |xcconfig_path|
+    xcconfig = File.read(xcconfig_path)
+    new_xcconfig = xcconfig.gsub(/BUILD_LIBRARY_FOR_DISTRIBUTION = YES/, 'BUILD_LIBRARY_FOR_DISTRIBUTION = NO')
+    if xcconfig != new_xcconfig
+      File.write(xcconfig_path, new_xcconfig)
+    end
+  end
+  puts "✅ Fixed BUILD_LIBRARY_FOR_DISTRIBUTION in xcconfig files"
 end

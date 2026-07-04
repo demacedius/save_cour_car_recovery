@@ -81,7 +81,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ),
                             const SizedBox(height: 24),
                             Text(
-                              'Créer Votre Compte',
+                              'Créez votre compte',
                               style: TextStyle(
                                 fontSize: MediaQuery.of(context).size.width < 400 ? 20 : 24,
                                 fontWeight: FontWeight.w600,
@@ -91,7 +91,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Créer un compte pour profiter d\'une\nexpérience personnalisé',
+                              'Créez un compte pour profiter d\'une\nexpérience personnalisée',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: MediaQuery.of(context).size.width < 400 ? 12 : 14,

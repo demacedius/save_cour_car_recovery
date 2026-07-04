@@ -8,6 +8,8 @@ class VehicleData {
   final int? year;
   final int? mileage;
   final DateTime? technicalControlDate;
+  final String? engineType;
+  final String? displacement;
 
   VehicleData({
     this.id,
@@ -19,6 +21,8 @@ class VehicleData {
     this.year,
     this.mileage,
     this.technicalControlDate,
+    this.engineType,
+    this.displacement,
   });
 
   factory VehicleData.fromJson(Map<String, dynamic> json) {
@@ -36,6 +40,8 @@ class VehicleData {
           : json['technicalControlDate'] != null
               ? _parseDate(json['technicalControlDate'])
               : null,
+      engineType: json['engine_type'] ?? json['engineType'],
+      displacement: json['displacement'],
     );
   }
 
@@ -50,6 +56,8 @@ class VehicleData {
       'year': year,
       'mileage': mileage,
       'technicalControlDate': technicalControlDate?.toUtc().toIso8601String(),
+      'engine_type': engineType,
+      'displacement': displacement,
     };
   }
 
@@ -63,6 +71,8 @@ class VehicleData {
     int? year,
     int? mileage,
     DateTime? technicalControlDate,
+    String? engineType,
+    String? displacement,
   }) {
     return VehicleData(
       id: id ?? this.id,
@@ -74,6 +84,8 @@ class VehicleData {
       year: year ?? this.year,
       mileage: mileage ?? this.mileage,
       technicalControlDate: technicalControlDate ?? this.technicalControlDate,
+      engineType: engineType ?? this.engineType,
+      displacement: displacement ?? this.displacement,
     );
   }
 

@@ -43,5 +43,6 @@ jobs:
               -p 3334:3334 \
               --restart always \
               --env-file ~/save_cour_car_recovery/.env \
-              -e RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} \
+              -e SMTP_USER=${{ secrets.SMTP_USER }} \
+              -e SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }} \
               ${{ secrets.DOCKERHUB_USERNAME }}/save_cour_car_recovery:latest

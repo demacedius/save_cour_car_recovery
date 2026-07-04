@@ -111,3 +111,30 @@ Future<Map<String, dynamic>?> transferVehicle(int vehicleId, String newOwnerEmai
     return {'error': e.toString()};
   }
 }
+
+Future<bool> updateVehicle(VehicleData vehicle, String token) async {
+  final url = Uri.parse('${ApiConfig.baseUrl}/vehicles/${vehicle.id}');
+  try {
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'plate': vehicle.plate,
+        'model': vehicle.model,
+        'brand': vehicle.brand,
+        'year': vehicle.year,
+        'mileage': vehicle.mileage,
+        'technical_control_date': vehicle.technicalControlDate?.toUtc().toIso8601String(),
+        'engine_type': vehicle.engineType,
+        'displacement': vehicle.displacement,
+      }),
+    );
+    return response.statusCode == 200;
+  } catch (e) {
+    print('❌ Erreur updateVehicle: $e');
+    return false;
+  }
+}

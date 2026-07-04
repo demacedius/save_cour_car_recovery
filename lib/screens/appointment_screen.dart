@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:save_your_car/api_service/user_vehicles.dart';
 import 'package:save_your_car/widgets/Main_scaffold.dart';
@@ -9,6 +10,8 @@ import 'package:save_your_car/services/auth_service.dart';
 import 'package:save_your_car/services/notification_service.dart';
 import 'package:save_your_car/models/vehicles.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 // Classe pour représenter un événement du calendrier
 class CalendarEvent {
@@ -396,6 +399,18 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                       ),
                     ),
                     const Spacer(),
+                    GestureDetector(
+                      onTap: _exportIcs,
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.ios_share, color: Colors.white, size: 16),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -1512,6 +1527,64 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     );
   }
 
+
+  Future<void> _exportIcs() async {
+    if (_userAppointments.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Aucun rendez-vous à exporter')),
+      );
+      return;
+    }
+
+    final buf = StringBuffer();
+    buf.writeln('BEGIN:VCALENDAR');
+    buf.writeln('VERSION:2.0');
+    buf.writeln('PRODID:-//SaveYourCar//FR');
+    buf.writeln('CALSCALE:GREGORIAN');
+
+    for (final appt in _userAppointments) {
+      final dateStr = appt['date'] as String? ?? '';
+      final timeStr = appt['time'] as String? ?? '09:00';
+      DateTime? dt;
+      try {
+        dt = DateTime.parse('${dateStr}T$timeStr:00');
+      } catch (_) {
+        continue;
+      }
+      final fmt = DateFormat("yyyyMMdd'T'HHmmss");
+      final dtStart = fmt.format(dt);
+      final dtEnd = fmt.format(dt.add(const Duration(hours: 1)));
+      final now = fmt.format(DateTime.now());
+      final uid = 'svc-${appt['id'] ?? dt.millisecondsSinceEpoch}@saveyourcar';
+      final garage = appt['garage_name'] ?? 'Garage';
+      final service = appt['service'] ?? 'Rendez-vous';
+      final desc = appt['description'] ?? '';
+      final vehicleInfo = _getVehicleInfoForAppointment(appt) ?? '';
+
+      buf.writeln('BEGIN:VEVENT');
+      buf.writeln('UID:$uid');
+      buf.writeln('DTSTAMP:$now');
+      buf.writeln('DTSTART:$dtStart');
+      buf.writeln('DTEND:$dtEnd');
+      buf.writeln('SUMMARY:$service – $garage');
+      if (desc.isNotEmpty || vehicleInfo.isNotEmpty) {
+        buf.writeln('DESCRIPTION:${vehicleInfo.isNotEmpty ? 'Véhicule: $vehicleInfo\\n' : ''}$desc');
+      }
+      buf.writeln('LOCATION:$garage');
+      buf.writeln('END:VEVENT');
+    }
+
+    buf.writeln('END:VCALENDAR');
+
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/saveyourcar_rdv.ics');
+    await file.writeAsString(buf.toString());
+
+    await Share.shareXFiles(
+      [XFile(file.path, mimeType: 'text/calendar')],
+      subject: 'Mes rendez-vous Save Your Car',
+    );
+  }
 
   /// Récupère les informations du véhicule pour un rendez-vous
   String? _getVehicleInfoForAppointment(Map<String, dynamic> appointment) {

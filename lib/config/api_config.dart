@@ -2,23 +2,16 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class ApiConfig {
-  // Utiliser l'IP alternative du Mac
   static String get baseUrl {
-    // IP alternative qui fonctionnait
-    return 'http://192.168.0.119:3334';
+    return 'http://83.228.205.107:3334';
   }
-  
-  // Tentative de détection d'émulateur (approximative)
+
   static bool _isEmulator() {
-    // Pour l'instant, forcer l'utilisation de 10.0.2.2 pour tous les Android
-    // car il semble que vous testiez sur émulateur
-    // TODO: Affiner cette détection ou utiliser un flag de configuration
     return Platform.isAndroid;
   }
-  
-  // URL alternative si le réseau principal ne fonctionne pas
+
   static String get alternativeBaseUrl {
-    return 'http://192.168.0.164:3334';
+    return 'http://83.228.205.107:3334';
   }
   
   // Pour le debugging
