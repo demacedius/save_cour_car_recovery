@@ -40,12 +40,26 @@ jobs:
             sort -u ~/.ssh/authorized_keys -o ~/.ssh/authorized_keys
             chmod 600 ~/.ssh/authorized_keys
             mkdir -p ~/save_cour_car_recovery
-            printf 'DB_HOST=${{ secrets.DB_HOST }}\nDB_PORT=${{ secrets.DB_PORT }}\nDB_USER=${{ secrets.DB_USER }}\nDB_PASSWORD=${{ secrets.DB_PASSWORD }}\nDB_NAME=${{ secrets.DB_NAME }}\nJWT_SECRET=${{ secrets.JWT_SECRET }}\nPORT=3334\nRAPIDAPI_KEY=${{ secrets.RAPIDAPI_KEY }}\nSTRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}\nSTRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}\nSMTP_USER=${{ secrets.SMTP_USER }}\nSMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}\n' > ~/save_cour_car_recovery/.env
+            printf 'DB_HOST=db\nDB_PORT=5432\nDB_USER=${{ secrets.DB_USER }}\nDB_PASSWORD=${{ secrets.DB_PASSWORD }}\nDB_NAME=${{ secrets.DB_NAME }}\nJWT_SECRET=${{ secrets.JWT_SECRET }}\nPORT=3334\nRAPIDAPI_KEY=${{ secrets.RAPIDAPI_KEY }}\nSTRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}\nSTRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}\nSMTP_USER=${{ secrets.SMTP_USER }}\nSMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}\n' > ~/save_cour_car_recovery/.env
+            docker network create app-network 2>/dev/null || true
+            if ! docker ps -q -f name=^db$ | grep -q .; then
+              docker run -d \
+                --name db \
+                --network app-network \
+                --restart always \
+                -e POSTGRES_USER=${{ secrets.DB_USER }} \
+                -e POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }} \
+                -e POSTGRES_DB=${{ secrets.DB_NAME }} \
+                -v postgres_data:/var/lib/postgresql/data \
+                postgres:15-alpine
+              sleep 5
+            fi
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/save_cour_car_recovery:latest
             docker stop go-backend || true
             docker rm go-backend || true
             docker run -d \
               --name go-backend \
+              --network app-network \
               -p 3334:3334 \
               --restart always \
               --env-file ~/save_cour_car_recovery/.env \
